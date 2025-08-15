@@ -8,7 +8,7 @@ function HeroSection() {
         <div className="flex w-[100%] flex-col md:flex-row items-center justify-between gap-3 ">
           {/* Left Content */}
           <div className="space-y-6 text-start md:text-left w-full lg:w-[65%]">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-blue-600 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-[4.8rem] font-sans font-bold text-blue-600 leading-tight">
               Go big with Messenger
             </h1>
 

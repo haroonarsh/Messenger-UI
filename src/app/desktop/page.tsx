@@ -1,10 +1,14 @@
-import React from 'react'
+import Footer from "@/components/footer/footer";
+import Header from "@/components/header/header";
+import HeroSection from "@/components/desktopHeroSection/desktopHeroSection";
 
 function page() {
   return (
-    <div>
-        <h1 className="text-4xl font-bold">Welcome to Desktop</h1>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-between bg-[#ffffff]">
+      <Header />
+      <HeroSection />
+      <Footer />
+    </main>
   )
 }
 
