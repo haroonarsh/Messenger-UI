@@ -1,6 +1,6 @@
-import Footer from "@/components/footer";
-import Header from "@/components/header";
-import HeroSection from "@/components/heroSection";
+import Footer from "@/components/footer/footer";
+import Header from "@/components/header/header";
+import HeroSection from "@/components/homeHeroSection/homeHeroSection";
 
 export default function Home() {
   return (
