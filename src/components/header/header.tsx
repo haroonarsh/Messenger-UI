@@ -7,12 +7,13 @@ import { HiOutlineMenu } from "react-icons/hi";
 import { RxCross1 } from "react-icons/rx";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { FaAngleDown } from "react-icons/fa6";
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFeatureMenuOpen, setIsFeatureMenuOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -27,17 +28,17 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 md:px-10 py-8 flex w-full justify-between items-center h-26 text-white">
         <Image src="/messenger.png" alt="Logo" width={40} height={40} className='cursor-pointer' onClick={() => router.push('/')}/>
         <ul className="hidden md:flex space-x-7 text-black font-semibold  font-sans">
-          <li className="flex items-center cursor-pointer border-b-[3.5px] border-transparent hover:border-[#0a7cff]" onClick={toggleFeatureMenu} >Features <TiArrowSortedDown className={`w-4 h-4 ${isFeatureMenuOpen ? 'rotate-180' : ''}`}/></li>
-          <li className='cursor-pointer border-b-[3.5px] border-transparent hover:border-[#0a7cff]' onClick={() => router.push('/privacy')}>Privacy and safety</li>
-          <li className='cursor-pointer border-b-[3.5px] border-transparent hover:border-[#0a7cff]' onClick={() => router.push('/desktop')}>Desktop app</li>
-          <li className='cursor-pointer border-b-[3.5px] border-transparent hover:border-[#0a7cff]' onClick={() => router.push('/developers')}>For developers</li>
-          <li className='cursor-pointer border-b-[3.5px] border-transparent hover:border-[#0a7cff]' onClick={() => router.push('/help')}>Help Centre</li>
+          <li className={`flex items-center cursor-pointer border-b-[3.5px] hover:border-[#0a7cff] ${isFeatureMenuOpen || pathname === '/features' ? 'border-[#0a7cff]' : 'border-transparent'}`} onClick={toggleFeatureMenu} >Features <TiArrowSortedDown className={`w-4 h-4 ${isFeatureMenuOpen ? 'rotate-180' : ''}`}/></li>
+          <li className={`cursor-pointer border-b-[3.5px] hover:border-[#0a7cff] ${pathname === '/privacy' ? 'border-[#0a7cff]' : 'border-transparent'}`} onClick={() => router.push('/privacy')}>Privacy and safety</li>
+          <li className={`cursor-pointer border-b-[3.5px] hover:border-[#0a7cff] ${pathname === '/desktop' ? 'border-[#0a7cff]' : 'border-transparent'}`} onClick={() => router.push('/desktop')}>Desktop app</li>
+          <li className={`cursor-pointer border-b-[3.5px] hover:border-[#0a7cff] ${pathname === '/developers' ? 'border-[#0a7cff]' : 'border-transparent'}`} onClick={() => router.push('/developers')}>For developers</li>
+          <li className={`cursor-pointer border-b-[3.5px] hover:border-[#0a7cff] ${pathname === '/help' ? 'border-[#0a7cff]' : 'border-transparent'}`} onClick={() => router.push('/help')}>Help Centre</li>
         </ul>
         <HiOutlineMenu onClick={toggleMenu} className={`w-8 h-8 text-black cursor-pointer md:hidden ${isMenuOpen ? 'hidden' : 'block'}`} />
         <RxCross1 onClick={toggleMenu} className={`w-7 h-7 text-black cursor-pointer md:hidden ${isMenuOpen ? 'block' : 'hidden'}`} />
       </div>
       </div>
-      <div className="h-28 md:h-45"></div> {/* Spacer for fixed header */}
+      <div className={`h-28 md:h-45 ${pathname === '/help' ? 'hidden' : 'block'}`}></div> {/* Spacer for fixed header */}
 
       {/* Feature Menu for medium and large screens */}
       <div className={`fixed hidden md:flex top-0 left-0 z-50 w-full bg-white ${isFeatureMenuOpen ? 'md:top-25' : 'md:top-[-48rem]'} duration-300`}>
@@ -71,16 +72,16 @@ function Header() {
       {/* For small screens */}
       <div className={`fixed top-25 py-4 left-0 bg-white w-full md:hidden ${isMenuOpen ? 'block border-t-[1px]' : 'hidden'} shadow-lg z-50`}>
           <ul className="flex flex-col gap-7 md:hidden space-x-7 text-[#333333] font-semibold  font-sans">
-          <li className="flex items-center justify-between w-full px-4 cursor-pointer text-3xl font-semibold font-sans" onClick={toggleFeatureMenu}><span className='border-b-[3.5px] border-transparent hover:border-[#0a7cff]'>Features</span> <FaAngleDown className={`w-5 h-5 ${isFeatureMenuOpen ? 'rotate-180' : ''}`}/></li>
+          <li className={`flex items-center justify-between w-full px-4 cursor-pointer text-3xl font-semibold font-sans ${isFeatureMenuOpen || pathname === '/features' ? 'text-[#0a7cff]' : ''}`} onClick={toggleFeatureMenu}><span className='border-b-[3.5px] border-transparent hover:border-[#0a7cff]'>Features</span> <FaAngleDown className={`w-5 h-5 ${isFeatureMenuOpen ? 'rotate-180' : ''}`}/></li>
           <li className={`w-full flex flex-col gap-2 ${isFeatureMenuOpen ? 'block' : 'hidden'}`}>
             <span className='flex items-center justify-between p-4 md:hidden cursor-pointer w-full bg-[#f4f9fe] border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-2xl font-semibold font-sans' onClick={() => router.push("/features#useful")}>Useful <FaArrowRightLong className='text-[#0a7cff] h-5 w-5' /></span>
             <span className='flex items-center justify-between p-4 md:hidden cursor-pointer w-full bg-[#f4f9fe] border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-2xl font-semibold font-sans' onClick={() => router.push("/features#social")}>Social <FaArrowRightLong className='text-[#0a7cff] h-5 w-5' /></span>
             <span className='flex items-center justify-between p-4 md:hidden cursor-pointer w-full bg-[#f4f9fe] border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-2xl font-semibold font-sans' onClick={() => router.push("/features#expressive")}>Expressive <FaArrowRightLong className='text-[#0a7cff] h-5 w-5' /></span>
           </li>
-          <li className='cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans'>Privacy and safety</li>
-          <li className='cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans'>Desktop app</li>
-          <li className='cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans'>For developers</li>
-          <li className='cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans'>Help Centre</li>
+          <li className={`cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans ${pathname === '/privacy' ? 'text-[#0a7cff]' : ''}`} onClick={() => router.push("/privacy")}>Privacy and safety</li>
+          <li className={`cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans ${pathname === '/desktop' ? 'text-[#0a7cff]' : ''}`} onClick={() => router.push("/desktop")}>Desktop app</li>
+          <li className={`cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans ${pathname === '/developers' ? 'text-[#0a7cff]' : ''}`} onClick={() => router.push("/developers")}>For developers</li>
+          <li className={`cursor-pointer w-fit px-4 border-b-[3.5px] border-transparent hover:border-[#0a7cff] text-3xl font-semibold font-sans ${pathname === '/help' ? 'text-[#0a7cff]' : ''}`} onClick={() => router.push("/help")}>Help Centre</li>
         </ul>
       </div>
     </>
