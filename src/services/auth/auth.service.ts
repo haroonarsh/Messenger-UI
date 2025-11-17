@@ -1,4 +1,4 @@
-import { API_BASE_URL, API_LOGIN, API_ME, API_REGISTER } from "@/libs/api";
+import { API_BASE_URL, API_LOGIN, API_LOGOUT, API_ME, API_REGISTER } from "@/libs/api";
 import { LoginRequest, RegisterRequest, RegisterResponse } from "@/libs/types";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -36,6 +36,12 @@ export const authService = {
                 'Authorization': `Bearer ${token}`
             } 
         });
+        return res.data;
+    },
+
+    async logout() {
+        const res = await axios.post(`${API_LOGOUT}`, {}, { withCredentials: true });
+        // Cookies.remove('token');
         return res.data;
     }
 };
