@@ -56,3 +56,35 @@ export interface IMessage {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface User {
+    _id: string;
+    name: string;
+    username: string;
+    email: string;
+    avatar?: {
+        public_id?: string;
+        url: string;
+    } | null;
+    bio?: string;
+    status?: string;
+    friends?: string[];
+    friendRequests?: FriendRequest[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface FriendRequest {
+    _id: string;
+    from: User; // User ID
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: Date;
+}
+
+export interface SearchUserPayload {
+    q: string;
+}
+
+export interface SendFriendRequestPayload {
+    userId: string;
+}
