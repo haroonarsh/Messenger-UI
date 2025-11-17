@@ -12,7 +12,7 @@ interface AuthContextType {
     loading: boolean;
     register: (payload: RegisterRequest, file?: File) => Promise<void>;
     login: (payload: LoginRequest) => Promise<void>;
-    // logout: () => Promise<void>;
+    logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
 
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             await authService.login(payload);
             await fetchUser();
-            notify();
+            toast.success("Logged in successfully", { duration: 3000, position: "top-right", icon: "🚀"});
             router.push("/main")
         } catch (error: ErrorResponse | any) {
             console.log("Error logging in:", error.response.data.message);
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             await authService.register(payload, file);
             await fetchUser();
-            notify();
+            toast.success("Registered successfully", { duration: 3000, position: "top-right", icon: "🚀"}); 
             router.push("/main")
         } catch (error: ErrorResponse | any) {
             console.log("Error logging in:", error.response.data.message);
@@ -81,8 +81,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const logout = async () => {
+        try {
+            await authService.logout();
+            setUser(null);
+            router.push("/");
+            toast.success("Logged out successfully", { duration: 3000, position: "top-right"});
+        } catch (error) {
+            console.error("Error logging out:", error);
+            toast.error("Error logging out", { duration: 3000, position: "top-right"});
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, loading, register, login, refreshUser: fetchUser}}>
+        <AuthContext.Provider value={{ user, loading, register, login, logout, refreshUser: fetchUser}}>
             <Toaster />
             {children}
         </AuthContext.Provider>
