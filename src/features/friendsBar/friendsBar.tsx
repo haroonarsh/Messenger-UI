@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { MdFacebook } from "react-icons/md";
 import { HiMiniPencilSquare } from "react-icons/hi2";
 import { IoSearch } from "react-icons/io5";
 import { BsThreeDots } from "react-icons/bs";
 import Image from 'next/image';
+import { InviteModal } from '../addFriend/addFriend';
 
 function FriendsBar() {
+    const [inviteOpen, setInviteOpen] = useState(false);
+
   return (
+    <>
     <div className='flex flex-col gap-3 bg-[#ffffff] min-w-[338px] xl:min-w-[352px] h-full shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2'>
       <div className='flex items-center justify-between text-gray-950'>
         <h1 className='text-2xl font-bold'>Chats</h1>
@@ -14,7 +18,8 @@ function FriendsBar() {
           <span className='relative text-2xl bg-gray-100 hover:bg-gray-200 cursor-pointer p-[6px] rounded-full'><MdFacebook />
           <span className='absolute w-[12px] h-[12px] rounded-full border-2 top-0 right-0 border-white bg-blue-600' />
           </span>
-          <span className='text-2xl bg-gray-100 hover:bg-gray-200 cursor-pointer p-[6px] rounded-full'><HiMiniPencilSquare /></span>
+          <span className='text-2xl bg-gray-100 hover:bg-gray-200 cursor-pointer p-[6px] rounded-full'
+          onClick={() => setInviteOpen(true)}><HiMiniPencilSquare /></span>
         </span>
       </div>
       <div className='flex items-center justify-start gap-2 bg-gray-100 hover:bg-gray-200 cursor-pointer px-[6px] py-[3px] rounded-full'>
@@ -44,6 +49,8 @@ function FriendsBar() {
         </div>
       </div>
     </div>
+    <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} />
+    </>
   )
 }
 
