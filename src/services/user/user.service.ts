@@ -23,7 +23,7 @@ export const searchUsers = async (payload: SearchUserPayload): Promise<User[]> =
 export const sendFriendRequest = async (payload: SendFriendRequestPayload): Promise<{ message: string }> => {
     const token = Cookies.get('token');
     if (!token) throw new Error('No token found');
-    const response = await axios.post(`${API_SEND_FRIEND_REQUEST}${payload.userId}`, {
+    const response = await axios.post(`${API_SEND_FRIEND_REQUEST}${payload.userId}`, {}, {
         headers: {
             'Authorization': `Bearer ${token}`
         },
