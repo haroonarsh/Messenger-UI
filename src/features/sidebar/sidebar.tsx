@@ -7,12 +7,14 @@ import { CgList } from "react-icons/cg";
 import Image from 'next/image';
 import { IUser } from '@/libs/types';
 import PersonalInfo from '../personalInfo/personalInfo';
+import PendingFriendRequests from '../pendingFriendRequests/pendingFriendRequests';
 
 type Props = {
   data: IUser
 }
 function Sidebar({ data }: Props) {
   const [open, setOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   const handleOpen = () => setOpen(!open);
 
@@ -24,7 +26,9 @@ function Sidebar({ data }: Props) {
       <div>
         <TbMessageCircleFilled className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[10px] rounded-lg' />
         <AiFillShop className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[10px] rounded-lg' />
-        <AiFillMessage className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[10px] rounded-lg' />
+        <AiFillMessage className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[10px] rounded-lg' 
+        onClick={() => setIsActive(true)}
+        />
         <BsFillArchiveFill className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[12px] rounded-lg' />
       </div>
       <div className='w-[35px] mx-auto h-[1px] bg-gray-300'></div>
@@ -45,6 +49,9 @@ function Sidebar({ data }: Props) {
     </div>
     {/* Personal Info */}
     <PersonalInfo open={open} isClose={() => setOpen(false)} />
+
+      {/* Pending Friend Requests  */}
+      <PendingFriendRequests open={isActive} onOpenChange={setIsActive} />
     </>
   )
 }
