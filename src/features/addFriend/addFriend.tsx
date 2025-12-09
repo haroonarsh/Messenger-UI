@@ -121,10 +121,9 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
           {/* Users List */}
           <div className="space-y-2 max-h-80 pr-1 overflow-y-auto scrollbar-component">
             {users.map((user) => (
-                <Button
+                <div
                   key={user._id}
                   // onClick={() => handleSelectUser(user._id)}
-                  type="button"
                   className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors`}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
@@ -156,7 +155,7 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
                   >
                     Send Request
                   </Button>
-                </Button>
+                </div>
               )
             )}
             {users.length === 0 && searchQuery.length > 0 && !loading && (
@@ -168,14 +167,14 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-4">
+          {/* <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 text-gray-200 cursor-pointer">
               Cancel
             </Button>
             <Button onClick={() => onOpenChange(false)} disabled={selectedUsers.length === 0} className="flex-1 border hover:bg-blak/10 cursor-pointer">
               Invite ({selectedUsers.length})
             </Button>
-          </div>
+          </div> */}
         </div>
       </DialogContent>
     </Dialog>
