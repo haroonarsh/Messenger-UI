@@ -1,5 +1,6 @@
-import { API_ACCEPT_FRIEND_REQUEST, API_GET_PENDING_REQUESTS, API_SEARCH_USERS, API_SEND_FRIEND_REQUEST } from "@/libs/api";
+import { API_ACCEPT_FRIEND_REQUEST, API_GET_PENDING_REQUESTS, API_REJECT_FRIEND_REQUEST, API_SEARCH_USERS, API_SEND_FRIEND_REQUEST } from "@/libs/api";
 import { FriendRequest, SearchUserPayload, SendFriendRequestPayload, User } from "@/libs/types";
+import api from "@/utils/api";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -58,15 +59,25 @@ export const getPendingRequests = async (): Promise<FriendRequest[]> => {
 export const acceptFriendRequest = async (requestId: string): Promise<{ message: string; conversationId: string }> => {
     const token = Cookies.get('token');
     if (!token) throw new Error('No token found');
-    const response = await axios.post(`${API_ACCEPT_FRIEND_REQUEST}${requestId}/accept`, {
+    const response = await api.post(`${API_ACCEPT_FRIEND_REQUEST}${requestId}/accept`);
+
+    if (response.status !== 200) {
+        throw new Error(response.statusText || 'Failed to accept friend request');
+    }
+
+    return response.data;
+};
+
+export const rejectFriendRequest = async (requestId: string): Promise<{ message: string }> => {
+    const response = await axios.post(`${API_REJECT_FRIEND_REQUEST}${requestId}/reject`, {}, {
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${Cookies.get('token')}`
         },
         withCredentials: true
     });
 
     if (response.status !== 200) {
-        throw new Error(response.statusText || 'Failed to accept friend request');
+        throw new Error(response.statusText || 'Failed to reject friend request');
     }
 
     return response.data;
