@@ -61,6 +61,27 @@ export const useSocket = () => {
         };
     }, [logout]);
 
+    useEffect(() => {
+        if (!socket) return;
+
+        const onlineUsers = new Set<string>();
+
+        socket.on("userOnline", ({ userId }: { userId: string }) => {
+        onlineUsers.add(userId);
+        // You can use a global state or context to update online status
+        // For now, we'll handle in component
+        });
+
+        socket.on("userOffline", ({ userId }: { userId: string }) => {
+            onlineUsers.delete(userId);
+        });
+
+        return () => {
+            socket.off("userOnline");
+            socket.off("userOffline");
+        };
+    }, [socket]);
+
     const joinConversation = (conversationId: string) => {
         const currentSocket = getSocket();
         if (currentSocket && conversationId) {
@@ -75,11 +96,8 @@ export const useSocket = () => {
         }
     };
     
-    const sendMessage = (payload: { conversationId: string; text: string; attachments?: any, type: string }) => {
-        const currnetSocket = getSocket();
-        if (currnetSocket) {
-            currnetSocket.emit("send-message", payload);
-        }
+    const sendMessage = (payload: { conversationId: string; text: string }) => {
+        socket?.emit("send-message", payload);
     };
 
     return { socket, joinConversation, leaveConversaton, sendMessage };
