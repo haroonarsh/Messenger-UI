@@ -1,4 +1,4 @@
-import { API_ACCEPT_FRIEND_REQUEST, API_GET_PENDING_REQUESTS, API_REJECT_FRIEND_REQUEST, API_SEARCH_USERS, API_SEND_FRIEND_REQUEST } from "@/libs/api";
+import { API_ACCEPT_FRIEND_REQUEST, API_BASE_URL, API_GET_FRIENDS, API_GET_PENDING_REQUESTS, API_REJECT_FRIEND_REQUEST, API_SEARCH_USERS, API_SEND_FRIEND_REQUEST } from "@/libs/api";
 import { FriendRequest, SearchUserPayload, SendFriendRequestPayload, User } from "@/libs/types";
 import api from "@/utils/api";
 import axios from "axios";
@@ -81,4 +81,9 @@ export const rejectFriendRequest = async (requestId: string): Promise<{ message:
     }
 
     return response.data;
+};
+
+export const getFriends = async (): Promise<User[]> => {
+  const response = await api.get(`${API_GET_FRIENDS}`);
+  return response.data; // Array of friends with name, username, avatar
 };
