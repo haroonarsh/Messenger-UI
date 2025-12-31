@@ -30,9 +30,9 @@ function page() {
 
   return (
     <main className='bg-[#f5f5f5] h-screen overflow-hidden w-full flex items-start justify-start'>
-      <Sidebar data={user} />
+      <Sidebar data={user as IUser} />
       <FriendsBar />
-      <FriendChat />
+      <FriendChat conversationId="" />
       <FriendInfo />
       <Toaster />
     </main>
