@@ -2,20 +2,34 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-    const token = request.cookies.get('token')?.value;
-    console.log('token', token);
+  const token = request.cookies.get("jwt")?.value; // ← Use 'jwt' (your cookie name)
+  const pathname = request.nextUrl.pathname;
 
-    if (token === undefined && token === null && request.nextUrl.pathname.startsWith('/main')) {
-        return NextResponse.redirect(new URL("/", request.url));
-    }
+  console.log("Middleware - Path:", pathname, "Token exists:", !!token);
 
-    if (token && token !== null && token !== undefined && request.nextUrl.pathname === '/') {
-        return NextResponse.redirect(new URL("/main", request.url));
-    }
+  // Protected routes (require login)
+  const protectedPaths = ["/main", "/chat"];
+  const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-    return NextResponse.next();
+  // If trying to access protected route without token → redirect to login
+  if (isProtected && !token) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // If logged in and trying to access login page → redirect to main
+  if (token && pathname === "/") {
+    return NextResponse.redirect(new URL("/main", request.url));
+  }
+
+  // Otherwise, allow the request
+  return NextResponse.next();
 }
 
+// Apply middleware to these paths
 export const config = {
-    matcher: ['/main/:path*'],
+  matcher: [
+    "/",
+    "/main/:path*",
+    "/chat/:path*",
+  ],
 };
