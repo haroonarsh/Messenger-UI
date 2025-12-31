@@ -1,5 +1,6 @@
 export interface IUser {
     _id: string;
+    id: string;
     username: string;
     email: string;
     password: string;
@@ -88,3 +89,14 @@ export interface SearchUserPayload {
 export interface SendFriendRequestPayload {
     userId: string;
 }
+
+export interface Conversation {
+    _id: string;
+    participants: User[];
+    lastMessage?: IMessage;
+    isGroup: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type Friend = User;
