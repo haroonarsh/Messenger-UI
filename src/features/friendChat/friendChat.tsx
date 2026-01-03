@@ -10,6 +10,7 @@ import { BsFillEmojiSmileFill } from "react-icons/bs";
 import { MdEmojiEmotions } from "react-icons/md";
 import { BiSolidShare } from "react-icons/bi";
 import { BiDotsVerticalRounded } from "react-icons/bi";
+import { MdOutlineLock } from "react-icons/md";
 import { useSocket } from '@/hooks/socket/useSocket';
 import { useAuth } from '@/hooks/auth/useAuth';
 import axios from 'axios';
@@ -17,6 +18,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '@/libs/api';
 import api from '@/utils/api';
+import { useOnlineUsers } from '@/context/OnlineUsersContext';
+import { User } from '@/libs/types';
 
 interface Message {
   _id: string;
@@ -34,7 +37,12 @@ interface Message {
   createdAt: string;
 }
 
-function FriendChat({ conversationId }: { conversationId: string }) {
+interface FriendChatProps {
+  conversationId: string;
+  friend: User | null;
+}
+
+function FriendChat({ conversationId, friend }: FriendChatProps) {
   const { socket, joinConversation, leaveConversaton, sendMessage } = useSocket();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,6 +52,12 @@ function FriendChat({ conversationId }: { conversationId: string }) {
   const [isTyping, setIsTyping] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { onlineUsers } = useOnlineUsers();
+
+  // get from conversation participants, opposite of current user
+  const friendId = conversationId.split('-').find(id => id !== user?.id);
+
+  console.log('friend Id:', friendId);
 
   console.log('conversation Id:', conversationId);
   console.log('Current user Id:', user?.id);
@@ -104,22 +118,39 @@ function FriendChat({ conversationId }: { conversationId: string }) {
     if (e.key === "Enter") handleSend();
   };
 
-  if (loading) return <div className="p-8 text-center">Loading chat...</div>;
+  if (loading) return (
+  <div className='flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans'>
+    <div className='flex flex-col gap-3 p-4 m-auto text-center items-center'>
+    <Image src="/messenger.png" alt="Logo" width={40} height={40} className=''/>
+    <h1 className='text-xl md:text-2xl lg:text-3xl font-light text-gray-800 '>
+      Messanger for all Devices
+    </h1>
+    <p>
+      Send and receive messages without keeping your phone online.
+    <br/> Use Messenger on up to 4 linked devices and 1 phone at the same time.
+    </p>
+    </div>
+    <div className='flex w-full items-center justify-center gap-1 pb-9'>
+      <MdOutlineLock className='text-lg md:text-xl text-gray-800'/><p>Your personal messages are end-to-end encrypted.</p>
+    </div>
+    </div>
+  );
 
   return (
     <>
     <div className='flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans'>
       {/* header */}
       <div className='absolute top-0 left-0 w-full px-2 py-1 rounded-t-xl flex items-center justify-between border-b border-gray-300 bg-white shadow-xs'>
-        {messages.length > 0 && (
           <div className='flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-[5px] py-[2px] rounded-md'>
-          <img src={messages[0].sender.avatar?.url} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] cursor-pointer rounded-full border border-gray-300" />
+          <img src={friend?.avatar?.url || '/side2.png'} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] cursor-pointer rounded-full border border-gray-300" />
+          <span className={`absolute bottom-[10px] left-[40px] w-3 h-3 rounded-full border-2 border-white ${
+              onlineUsers.has(friend?._id || '') ? 'bg-green-500' : 'bg-gray-400'
+            }`} />
           <span className='flex flex-col'>
-            <h2 className='text-gray-950 text-md'>{messages[0].sender.username}</h2>
-            <p className='text-gray-500 text-[13px]'>@{messages[0].sender.username}</p>
+            <h2 className='text-gray-950 text-md'>{friend?.name || 'Loading...'}</h2>
+            <p className='text-gray-500 text-[13px]'>@{friend?.username || ''}</p>
           </span>
         </div>
-        )}
         <div className='flex items-center gap-2 pr-1'>
           <span className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
           <BiSolidMessageRoundedDetail className='text-[22px] text-[#aa00ff] cursor-pointer' />
@@ -130,7 +161,7 @@ function FriendChat({ conversationId }: { conversationId: string }) {
         </div>
       </div>
       {/* chat */}
-      <div className='w-full h-full scrollbar-component flex flex-col gap-2 flex-grow items-start justify-end mb-16 p-4'>
+      <div className='w-full h-full mt-4 mb-12 flex-1 scrollbar-component p-4 pt-12 space-y-4'>
         {messages.map((msg) => (
           <div key={msg._id} className={`group flex items-center gap-2 ${msg.sender._id === user?.id ? 'self-end flex-row-reverse' : ''}`}>
           <img src={msg.sender.avatar?.url || '/side2.png'} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] rounded-full" />
