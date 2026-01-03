@@ -15,8 +15,13 @@ import { FaFileLines } from "react-icons/fa6";
 import { MdNotificationsOff } from "react-icons/md";
 import { MdReportProblem } from "react-icons/md";
 import { TbLogout } from "react-icons/tb";
+import { User } from '@/libs/types';
 
-function FriendInfo() {
+interface FriendInfoProps {
+  friend: User | null;
+}
+
+function FriendInfo( { friend }: FriendInfoProps ) {
   const [info, setInfo] = useState(false);
   const [members, setMembers] = useState(false);
   const [media, setMedia] = useState(false);
@@ -37,11 +42,11 @@ function FriendInfo() {
   }
   return (
     <>
-    <div className='hidden lg:flex flex-col gap-3 bg-[#ffffff] min-w-[23vw] mr-4 shadow-lg h-full my-4 rounded-xl text-[#595959] font-sans px-2 py-4 scrollbar-component'>
+    <div className='hidden lg:flex flex-col gap-3 bg-[#ffffff] min-w-[23vw] mr-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans px-2 py-4 scrollbar-component'>
       <div className='w-full flex flex-col items-center justify-center gap-2'>
-        <Image src="/side2.png" alt="Profile Image" width={100} height={100} className="w-[76px] h-[76px] cursor-pointer rounded-full border border-gray-300" />
-        <h2 className='text-gray-950 text-[17px] font-medium'>Haroon Arshad</h2>
-        <p className='text-gray-500 text-[13px]'>I'm a FullStack Web Developer</p>
+        <img src={ friend?.avatar?.url || "/side2.png"} alt="Profile Image" width={100} height={100} className="w-[76px] h-[76px] cursor-pointer rounded-full border border-gray-300" />
+        <h2 className='text-gray-950 text-[17px] font-medium'>{friend?.name || 'Loading...'}</h2>
+        <p className='text-gray-500 text-[13px]'>{friend?.status || 'Loading...' }</p>
         <div className='flex items-center gap-8 py-3'>
           <span className='flex flex-col items-center gap-1'>
           <span className='text-2xl bg-gray-100 hover:bg-gray-200 cursor-pointer p-[6px] rounded-full'>
