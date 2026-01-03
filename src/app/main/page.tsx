@@ -33,7 +33,7 @@ function page() {
       <Sidebar data={user as IUser} />
       <FriendsBar />
       <FriendChat conversationId="" />
-      <FriendInfo />
+      {/* <FriendInfo /> */}
       <Toaster />
     </main>
   )
