@@ -12,20 +12,23 @@ import toast from 'react-hot-toast';
 import { findOrCreateConversation } from '@/services/chat/chat.service';
 import { getFriends } from '@/services/user/user.service';
 import { Friend } from '@/libs/types';
+import { useOnlineUsers } from '@/context/OnlineUsersContext';
 
 
 function FriendsBar() {
     const [inviteOpen, setInviteOpen] = useState(false);
     const [friends, setFriends] = useState<Friend[]>([]);
-    const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+    const [onlineUser, setOnlineUser] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
 
     const { user } = useAuth();
     const { socket } = useSocket();
     const router = useRouter();
+    const { onlineUsers } = useOnlineUsers();
 
     console.log('friends:', friends);
-    console.log('online:', onlineUsers);
+    console.log('onlines:', onlineUsers);
+    console.log('online:', onlineUser);
     console.log('currentUser:', user);
     
     
@@ -52,11 +55,11 @@ function FriendsBar() {
       if (!socket) return;
 
       socket.on("userOnline", ({ userId }: { userId: string }) => {
-      setOnlineUsers(prev => new Set(prev).add(userId));
+      setOnlineUser(prev => new Set(prev).add(userId));
     });
 
     socket.on("userOffline", ({ userId }: { userId: string }) => {
-      setOnlineUsers(prev => {
+      setOnlineUser(prev => {
         const newSet = new Set(prev);
         newSet.delete(userId);
         return newSet;
@@ -86,7 +89,7 @@ function FriendsBar() {
 
   return (
     <>
-    <div className='flex flex-col gap-3 bg-[#ffffff] min-w-[338px] xl:min-w-[352px] h-full shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2'>
+    <div className='flex flex-col gap-3 bg-[#ffffff] min-w-[338px] xl:min-w-[352px] h-[97%] shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2'>
       <div className='flex items-center justify-between text-gray-950'>
         <h1 className='text-2xl font-bold'>Chats</h1>
         <span className='flex items-center gap-2'>
@@ -106,9 +109,12 @@ function FriendsBar() {
           <p className='text-center text-gray-500 mt-4'>No friends found.</p>
         ) : (
           friends.map((friend) => (
-            <div key={friend._id} className='group flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer rounded-lg duration-75'
+            <div key={friend._id} className='relative group flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer rounded-lg duration-75'
             onClick={() => openChat(friend._id)}>
           <img src={friend.avatar?.url || ''} alt="Profile Image" width={100} height={100} className="w-[45px] h-[45px] cursor-pointer rounded-full border border-gray-300" />
+          <span className={`absolute bottom-[10px] left-[43px] w-3 h-3 rounded-full border-2 border-white ${
+              onlineUsers.has(friend._id) || onlineUser.has(friend._id) ? 'bg-green-500' : 'bg-gray-400'
+            }`} />
           <div className='relative'>
             <h2 className='text-gray-950'>{friend.username}</h2>
             <p className='text-gray-500 text-sm'>Haroon send you a message. <span>1 min</span></p>
