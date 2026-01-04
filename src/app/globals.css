@@ -26,7 +26,7 @@ body {
 }
 
 .scrollbar-component {
-  scrollbar-color: #a0a0a0 #f2f2f2;
+  scrollbar-color: #a0a0a0 white;
   scrollbar-width: thin;
   scrollbar-track-color: #f2f2f2;
   scrollbar-arrow-color: #a0a0a0;
