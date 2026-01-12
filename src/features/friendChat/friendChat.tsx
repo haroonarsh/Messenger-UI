@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image';
 import { PiDotsThreeCircleFill } from "react-icons/pi";
 import { BiSolidMessageRoundedDetail } from "react-icons/bi";
@@ -10,6 +10,7 @@ import { BsFillEmojiSmileFill } from "react-icons/bs";
 import { MdEmojiEmotions } from "react-icons/md";
 import { BiSolidShare } from "react-icons/bi";
 import { BiDotsVerticalRounded } from "react-icons/bi";
+import { RiSendPlane2Fill } from "react-icons/ri";
 import { MdOutlineLock } from "react-icons/md";
 import { useSocket } from '@/hooks/socket/useSocket';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -31,7 +32,7 @@ interface Message {
     };
   };
   text: string;
-  type: string;
+  type?: 'text' | 'image' | 'video';
   mediaUrl?: string;
   timestamp?: string;
   createdAt: string;
@@ -47,34 +48,84 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<'image' | 'video' | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   const [typing, setTyping] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { onlineUsers } = useOnlineUsers();
-
-  // get from conversation participants, opposite of current user
-  const friendId = conversationId.split('-').find(id => id !== user?.id);
-
-  console.log('friend Id:', friendId);
-
-  console.log('conversation Id:', conversationId);
-  console.log('Current user Id:', user?.id);
+  const skip = useRef(0);
+  const limit = 30;
+  const observer = useRef<IntersectionObserver | null>(null);
+  
+  console.log('messages:', messages);
   
   // auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleSendHand = () => {
+    sendMessage({ conversationId, text: "👋" });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setPreviewType(file.type.startsWith('video') ? 'video' : 'image');
+
+    // Upload immediately
+    uploadAndSend(file);
+  };
+
+  const uploadAndSend = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await api.post(`${API_BASE_URL}/upload/media`, formData , {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const mediaUrl = res.data.mediaUrl;
+
+      console.log('Uploaded media URL:', mediaUrl);
+
+      // Send message with media URL
+      sendMessage({ conversationId, text: "", type: file.type.startsWith('video') ? 'video' : 'image', mediaUrl });
+
+      // Clear preview
+      setPreviewUrl(null);
+      setPreviewType(null);
+    } catch (error) {
+      toast.error("Failed to upload media");
+      setPreviewUrl(null);
+      setPreviewType(null);
+    }
+  };
+
   // Fetch initial messages
-  useEffect(() => {
-    const fetchMessages = async () => {
+
+  const fetchMessages = async (loadMore = false) => {
+      if ((!hasMore && messages.length > 0)) return;
+      setLoading(true);
       try {
-        const res = await api.get(`${API_BASE_URL}/chat/messages/${conversationId}`);
-        console.log('data:', res);
+        const res = await api.get(`${API_BASE_URL}/chat/messages/${conversationId}?skip=${skip.current}&limit=${limit}`);
+
+        if (res.data.length < limit) setHasMore(false);
         
-        setMessages(res.data); // Reverse to show oldest first
+        setMessages(prev => loadMore ? [...res.data.reverse(), ...prev] : res.data.reverse()); // Reverse to show oldest first
+        skip.current += res.data.length;
         scrollToBottom();
       } catch (error) {
         toast.error("Failed to load messages");
@@ -82,6 +133,12 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
         setLoading(false);
       }
     };
+
+    
+  useEffect(() => {
+    skip.current = 0;
+    setMessages([]);
+    setHasMore(true);
 
     if (conversationId) {
       fetchMessages();
@@ -92,6 +149,20 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
       leaveConversaton(conversationId);
     };
   }, [conversationId]);
+
+  // Infinite scroll observer
+  const lastMessageRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchMessages(true);
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
 
   // Real-time incoming messages
   useEffect(() => {
@@ -162,16 +233,35 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
       </div>
       {/* chat */}
       <div className='w-full h-full mt-4 mb-12 flex-1 scrollbar-component p-4 pt-12 space-y-4'>
-        {messages.map((msg) => (
-          <div key={msg._id} className={`group flex items-center gap-2 ${msg.sender._id === user?.id ? 'self-end flex-row-reverse' : ''}`}>
+        {messages.map((msg, index) => (
+          <div 
+          key={msg._id}
+          ref={index === 0 ? lastMessageRef : null} // Trigger load more at top
+          className={`group flex items-center gap-2 ${msg.sender._id === user?.id ? 'self-end flex-row-reverse' : ''}`}>
           <img src={msg.sender.avatar?.url || '/side2.png'} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] rounded-full" />
-          <div className={`${msg.sender._id === user?.id ? 'bg-[#3050f9] text-gray-50' : 'bg-gray-200 text-gray-950'} px-3 py-1 rounded-full`}>
-            {msg.type === 'image' && msg.mediaUrl ? (
-              <img src={msg.mediaUrl || '/side2.png'} alt="Media" width={200} height={200} className="rounded-md" />
-            ) : (
-              <p>{msg.text}</p>
+          <div className={``}>
+            {msg.type === 'image' && msg.mediaUrl && (
+              <img src={msg.mediaUrl} alt="Send Image" width={200} height={200} className="rounded-lg max-w-full object-contain" />
             )}
-            <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+            {msg.type === 'video' && msg.mediaUrl && (
+              <video
+                src={msg.mediaUrl}
+                controls
+                className="rounded-lg max-w-full"
+                width={300}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
+              {/* Text Content */}
+            {msg.text && msg.text.trim() !== '' && (
+              <div className={`${msg.sender._id === user?.id && msg.type === 'text' ? 'bg-[#3050f9] text-gray-50' : 'bg-gray-200 text-gray-950'} px-3 py-1 rounded-full`}>
+              <p className='break-words'>{msg.text}
+              </p>
+              <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            )}
+            
           </div>
           {/* <p className='bg-gray-200 px-3 py-1 rounded-full text-gray-950'>Hello</p> */}
           <span className='hidden group-hover:flex items-center justify-center'>
@@ -205,14 +295,22 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
             <HiMiniPlusCircle className='text-[22px] text-[#3050f9] cursor-pointer' />
           </span>
           <span 
-          // onClick={handleImageClick} 
+          onClick={() => fileInputRef.current?.click()}
           className='flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200'>
+            <input type="file" title='media upload' ref={fileInputRef} onChange={handleFileSelect} accept="image/*,video/*" className="hidden" />
             <BsImage className='text-[18px] text-[#3050f9] cursor-pointer' />
           </span>
-          <label htmlFor="file" title='Upload Image'/>
-          <input id="file" type="file" 
-          // ref={fileInputRef} onChange={handleFileChange} 
-          accept="image/*" className="hidden" />
+          {/* //////////////// */}
+          {previewUrl && previewType && (
+    <div className="mx-auto max-w-xs">
+      {previewType === 'image' ? (
+        <img src={previewUrl} alt="Preview" className="rounded-lg max-w-full" />
+      ) : (
+        <video src={previewUrl} controls className="rounded-lg max-w-full" />
+      )}
+    </div>
+  )}
+  {/* /////////////////////////// */}
           <span className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
             <RiEmojiStickerFill className='text-[22px] text-[#3050f9] cursor-pointer' />
           </span>
@@ -228,7 +326,16 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
           className='w-full rounded-full px-3 bg-gray-100 focus:outline-none' />
           <BsFillEmojiSmileFill className='text-[35px] text-[#3050f9] cursor-pointer flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200' />
         </div>
-        <div onClick={handleSend} className='flex items-center justify-center p-[6px] cursor-pointer rounded-full hover:bg-gray-200'>👋</div>
+        <button
+          onClick={input.trim() ? handleSend : handleSendHand}
+          className='flex items-center justify-center p-[6px] cursor-pointer rounded-full hover:bg-gray-200'
+        >
+          {input.trim() ? (
+            <RiSendPlane2Fill className="w-5 h-5 text-[#3050f9]" />
+          ) : (
+            <span >👋</span>
+          )}
+        </button>
       </div>
     </div>
     </>
