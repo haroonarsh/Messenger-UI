@@ -103,8 +103,8 @@ function FriendsBar() {
       <div className='flex items-center justify-start gap-2 bg-gray-100 hover:bg-gray-200 cursor-pointer px-[6px] py-[3px] rounded-full'>
         <IoSearch className='text-3xl pl-2 text-gray-500'/>
         <input type="text" placeholder='Search Messenger' className='text-gray-950 focus:outline-none'/>
-      </div>
-      <div className='flex flex-col scrollbar-component pr-1'>
+      </div>  
+      <div className='flex-col scrollbar-component pr-1 w-full h-full flex-1'>
         {friends.length === 0 ? (
           <p className='text-center text-gray-500 mt-4'>No friends found.</p>
         ) : (
