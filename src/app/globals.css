@@ -26,9 +26,41 @@ body {
 }
 
 .scrollbar-component {
-  scrollbar-color: #a0a0a0 white;
+  /* Firefox: Thin scrollbar with custom colors */
   scrollbar-width: thin;
-  scrollbar-track-color: #f2f2f2;
-  scrollbar-arrow-color: #a0a0a0;
-  overflow-y: scroll;
+  scrollbar-color: #a0a0a0 #f2f2f2;
+
+  /* Force scroll when needed, hide when not (better than always showing) */
+  overflow-y: auto;
+
+  /* WebKit browsers (Chrome, Edge, Safari) – full custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px; /* Thin width */
+    height: 8px; /* For horizontal if needed */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f2f2f2;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #a0a0a0;
+    border-radius: 10px;
+    &:hover {
+      background: #909090; /* Slightly darker on hover */
+    }
+  }
+
+  /* CRITICAL: Hide the arrows (up/down buttons) completely */
+  &::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
+  /* Optional: Hide corner where vertical & horizontal meet */
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
