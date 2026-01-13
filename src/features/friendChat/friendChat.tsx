@@ -21,6 +21,7 @@ import { API_BASE_URL } from '@/libs/api';
 import api from '@/utils/api';
 import { useOnlineUsers } from '@/context/OnlineUsersContext';
 import { User } from '@/libs/types';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 interface Message {
   _id: string;
@@ -55,6 +56,7 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   const [hasMore, setHasMore] = useState(true);
   const [typing, setTyping] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<string>('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { onlineUsers } = useOnlineUsers();
@@ -82,9 +84,13 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
     setPreviewUrl(url);
     setPreviewType(file.type.startsWith('video') ? 'video' : 'image');
 
+    console.log('Selected file:', file);
     // Upload immediately
     uploadAndSend(file);
   };
+  console.log('previewUrl:', previewUrl);
+  console.log('previewType:', previewType);
+  
 
   const uploadAndSend = async (file: File) => {
     const formData = new FormData();
@@ -185,6 +191,11 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
     setInput("");
   };
 
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    setInput((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSend();
   };
@@ -241,9 +252,13 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
           <img src={msg.sender.avatar?.url || '/side2.png'} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] rounded-full" />
           <div className={``}>
             {msg.type === 'image' && msg.mediaUrl && (
+              <div>
               <img src={msg.mediaUrl} alt="Send Image" width={200} height={200} className="rounded-lg max-w-full object-contain" />
+              <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
             )}
             {msg.type === 'video' && msg.mediaUrl && (
+              <div>
               <video
                 src={msg.mediaUrl}
                 controls
@@ -252,6 +267,8 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
               >
                 Your browser does not support the video tag.
               </video>
+              <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
             )}
               {/* Text Content */}
             {msg.text && msg.text.trim() !== '' && (
@@ -324,8 +341,13 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
           onChange={(e) => setInput(e.target.value)} 
           onKeyPress={handleKeyPress}
           className='w-full rounded-full px-3 bg-gray-100 focus:outline-none' />
-          <BsFillEmojiSmileFill className='text-[35px] text-[#3050f9] cursor-pointer flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200' />
+          <BsFillEmojiSmileFill className='text-[35px] text-[#3050f9] cursor-pointer flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200' onClick={() => setShowEmojiPicker(!showEmojiPicker)}/>
         </div>
+        {showEmojiPicker && (
+          <div className="absolute bottom-16 right-4 z-10">
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
         <button
           onClick={input.trim() ? handleSend : handleSendHand}
           className='flex items-center justify-center p-[6px] cursor-pointer rounded-full hover:bg-gray-200'
