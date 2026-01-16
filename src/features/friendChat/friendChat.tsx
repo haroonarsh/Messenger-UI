@@ -22,6 +22,8 @@ import api from '@/utils/api';
 import { useOnlineUsers } from '@/context/OnlineUsersContext';
 import { User } from '@/libs/types';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { IoVideocam } from "react-icons/io5";
+import { IoCall } from "react-icons/io5";
 
 interface Message {
   _id: string;
@@ -55,7 +57,9 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [typing, setTyping] = useState<boolean>(false);
-  const [isTyping, setIsTyping] = useState<string>('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -69,6 +73,21 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   // auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleTyping = () => {
+    if (!isTyping) {
+      socket?.emit("typing", { conversationId });
+      setIsTyping(true);
+    }
+
+    // Reset typing timeout
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      socket?.emit("stopTyping", { conversationId });
+      setIsTyping(false);
+    }, 3000); // 3 seconds of inactivity
   };
 
   const handleSendHand = () => {
@@ -174,21 +193,38 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   useEffect(() => {
     if (!socket) return;
 
+    socket.on("typing", ({ userId }: { userId: string }) => {
+      if (userId !== user?.id) {
+        setOtherTyping(true);
+      }
+    });
+
+    socket.on("stopTyping", ({ userId }: { userId: string }) => {
+      if (userId !== user?.id) {
+        setOtherTyping(false);
+      }
+    });
+
     socket.on("new-message", (newMessage: Message) => {
       setMessages(prev => [...prev, newMessage]);
       scrollToBottom();
     });
 
     return () => {
+      socket.off("typing");
+      socket.off("stopTyping");
       socket.off("new-message");
     };
-  }, [socket]);
+  }, [socket, user?.id]);
 
   const handleSend = () => {
     if (!input.trim() || !conversationId) return;
 
     sendMessage({ conversationId, text: input.trim() });
     setInput("");
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    socket?.emit("stopTyping", { conversationId });
+    setIsTyping(false);
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
@@ -234,10 +270,13 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
           </span>
         </div>
         <div className='flex items-center gap-2 pr-1'>
-          <span className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
-          <BiSolidMessageRoundedDetail className='text-[22px] text-[#aa00ff] cursor-pointer' />
+          <span title='Voice call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+          <IoCall className='text-[21px] text-[#aa00ff] cursor-pointer' />
           </span>
-          <span className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+          <span title='Video call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+          <IoVideocam className='text-[22px] text-[#aa00ff] cursor-pointer' />
+          </span>
+          <span title='Conversation info' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
             <PiDotsThreeCircleFill className='text-[22px] text-[#aa00ff] cursor-pointer' />
           </span>
         </div>
@@ -288,8 +327,21 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
             <BiDotsVerticalRounded className='text-[27px] text-gray-500 p-[4px] rounded-full hover:bg-gray-200 cursor-pointer' />
           </span>
         </div>
+        
         ))}
-        {isTyping && <p className="text-gray-500 text-sm">{isTyping}</p>}
+        {/* Typing Indicator */}
+          {otherTyping && (
+            <div className="flex items-center gap-2 self-start mb-4">
+              <img src={friend?.avatar?.url || "/side2.png"} alt="" width={36} height={36} className="rounded-full" />
+              <div className="bg-gray-200 px-4 py-2 rounded-full">
+                <p className="text-sm">
+                  {friend?.name || "Friend"} is typing
+                  <span className="inline-block animate-pulse">...</span>
+                </p>
+              </div>
+            </div>
+          )}
+        {/* {isTyping && <p className="text-gray-500 text-sm">{isTyping}</p>} */}
         <div ref={messagesEndRef} />
         {/* <div className='group flex items-start gap-2 self-end my-3'>
           <span className='hidden group-hover:flex items-center mt-1 justify-center'>
@@ -338,7 +390,10 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
         <div className='flex items-center gap-2 w-full bg-gray-100 cursor-pointer px-[0px] py-[0px] mx-2 rounded-full'>
           <input type="text" placeholder='Aa' 
           value={input} 
-          onChange={(e) => setInput(e.target.value)} 
+          onChange={(e) => {
+            setInput(e.target.value);
+            handleTyping();
+          }} 
           onKeyPress={handleKeyPress}
           className='w-full rounded-full px-3 bg-gray-100 focus:outline-none' />
           <BsFillEmojiSmileFill className='text-[35px] text-[#3050f9] cursor-pointer flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200' onClick={() => setShowEmojiPicker(!showEmojiPicker)}/>
