@@ -64,3 +64,12 @@ body {
     background: transparent;
   }
 }
+
+@keyframes voiceWave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+.voice-wave-bar {
+  animation: voiceWave 1.2s ease-in-out infinite;
+}
