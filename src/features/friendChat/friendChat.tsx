@@ -12,6 +12,7 @@ import { BiSolidShare } from "react-icons/bi";
 import { BiDotsVerticalRounded } from "react-icons/bi";
 import { RiSendPlane2Fill } from "react-icons/ri";
 import { MdOutlineLock } from "react-icons/md";
+import { MdSettingsVoice } from "react-icons/md";
 import { useSocket } from '@/hooks/socket/useSocket';
 import { useAuth } from '@/hooks/auth/useAuth';
 import axios from 'axios';
@@ -24,6 +25,7 @@ import { User } from '@/libs/types';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { IoVideocam } from "react-icons/io5";
 import { IoCall } from "react-icons/io5";
+import { PhoneOff, Mic, MicOff, PlayCircle, PauseCircle } from 'lucide-react';
 
 interface Message {
   _id: string;
@@ -35,7 +37,7 @@ interface Message {
     };
   };
   text: string;
-  type?: 'text' | 'image' | 'video';
+  type?: 'text' | 'image' | 'video' | 'file' | 'audio' | 'voice';
   mediaUrl?: string;
   timestamp?: string;
   createdAt: string;
@@ -67,7 +69,328 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   const skip = useRef(0);
   const limit = 30;
   const observer = useRef<IntersectionObserver | null>(null);
+  const [callType, setCallType] = useState<'audio' | 'video' | null>(null);
+  const [inCall, setInCall] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<{ fromUserId: string; type: 'audio' | 'video' } | null>(null);
+  const [calling, setCalling] = useState(false);
+  const [pendingOffer, setPendingOffer] = useState<RTCSessionDescriptionInit | null>(null);
+  const [pendingCallerId, setPendingCallerId] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({}); 
+  const [durations, setDurations] = useState<{ [key: string]: string }>({});
+  const [currentTimes, setCurrentTimes] = useState<{ [key: string]: number }>({});
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+
+
+  // Calculate durations for voice messages
+  // useEffect(() => {
+  //   Object.keys(audioRefs.current).forEach(id => {
+  //     const audio = audioRefs.current[id];
+  //     if (audio) {
+  //       audio.onloadedmetadata = () => {
+  //       const mins = Math.floor(audio.duration / 60);
+  //       const secs = Math.floor(audio.duration % 60);
+  //       setDurations(prev => ({ ...prev, [id]: `${mins}:${secs.toString().padStart(2, '0')}` }));
+  //     };
+  //     }
+  //   });
+  // }, []);
+
+  // Toggle play/pause function
+  const togglePlay = (messageId: string) => {
+    const audio = audioRefs.current[messageId];
+    if (!audio) return;
+
+    if (playingId === messageId) {
+      audio.pause();
+      setPlayingId(null);
+    } else {
+      // Pause any playing
+      if (playingId) audioRefs.current[playingId]?.pause();
+
+      audio.play();
+      setPlayingId(messageId);
+    }
+  };
+
+  // Seek function
+const handleSeek = (messageId: string, value: number) => {
+  const audio = audioRefs.current[messageId];
+  if (audio) {
+    audio.currentTime = value;
+    setCurrentTimes(prev => ({ ...prev, [messageId]: value }));
+  }
+};
+
+// Format seconds to mm:ss
+const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+  //Recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
+
+        // Upload
+        uploadVoice(audioBlob);
+
+        // Clear chunks
+        audioChunksRef.current = [];
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      mediaRecorderRef.current = mediaRecorder;
+      setRecording(true);
+    } catch (error) {
+      toast.error("Failed to access microphone");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  };
+
+    // Toggle recording function
+  const toggleRecording = async () => {
+    if (recording) {
+      // Stop recording
+      stopRecording();
+    } else {
+      // START RECORDING
+      startRecording();
+    }
+  };
+
+  const uploadVoice = async (blob: Blob) => {
+    const formData = new FormData();
+    formData.append("file", blob, "voice.webm");
+
+    try {
+      const res = await api.post(`${API_BASE_URL}/upload/media`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const { mediaUrl } = res.data;
+
+      sendMessage({
+        conversationId,
+        text: "",
+        type: "voice",
+        mediaUrl,
+      });
+
+      setAudioUrl(null);
+    } catch (error) {
+      toast.error("Failed to upload voice message");
+      setAudioUrl(null);
+    }
+  }
+
+    // WebRTC setup for calls
+  const servers = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+    ],
+  };
+
+  const createPeerConnection = (type: 'audio' | 'video') => {
+    const pc = new RTCPeerConnection(servers);
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && friend?._id) {
+        socket?.emit("ice-candidate", { toUserId: friend._id, candidate: event.candidate });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      const stream = event.streams[0];
+      if (type === 'video') {
+        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = stream;
+      } else {
+        if (remoteAudioRef.current) remoteAudioRef.current.srcObject = stream;
+      }
+    };
+
+    return pc;
+  };
+
+  const startCall = async (type: 'audio' | 'video') => {
+    if (!friend?._id) return;
+
+    setCalling(true);
+    setCallType(type);
+    peerConnectionRef.current = createPeerConnection(type);
+
+    try {
+      const constraints = type === 'video' ? { audio: true, video: true } : { audio: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // Attach stream
+      if (type === 'video' && localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      } else if (localAudioRef.current) {
+        localAudioRef.current.srcObject = stream;
+      }
+
+      stream.getTracks().forEach(track => peerConnectionRef.current?.addTrack(track, stream));
+
+      const offer = await peerConnectionRef.current?.createOffer();
+      await peerConnectionRef.current?.setLocalDescription(offer);
+
+      socket?.emit("call-offer", {
+        toUserId: friend._id,
+        offer,
+        payload: { callType: type }
+      });
+    } catch (error: any) {
+      console.error("Call start error:", error);
+
+    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+      toast.error("Permission denied. Please allow microphone/camera access.");
+    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+      toast.error("No microphone or camera found.");
+    } else if (error.name === 'NotReadableError') {
+      toast.error("Device in use by another app.");
+    } else {
+      toast.error("Failed to access media devices. Check permissions.");
+    }
+
+    cleanupCall();
+    }
+  };
   
+  const acceptCall = async () => {
+    if (!pendingOffer || !pendingCallerId || !callType) {
+      toast.error("No pending call");
+      return;
+    }
+
+    setInCall(true);
+    peerConnectionRef.current = createPeerConnection(callType);
+
+    try {
+      await peerConnectionRef.current?.setRemoteDescription(pendingOffer);
+
+      const constraints = callType === 'video' ? { audio: true, video: true } : { audio: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      if (callType === 'video' && localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      } else if (localAudioRef.current) {
+        localAudioRef.current.srcObject = stream;
+      }
+
+      stream.getTracks().forEach(track => peerConnectionRef.current?.addTrack(track, stream));
+
+      const answer = await peerConnectionRef.current?.createAnswer();
+      await peerConnectionRef.current?.setLocalDescription(answer);
+
+      socket?.emit("call-answer", { 
+        toUserId: pendingCallerId, 
+        answer 
+      });
+
+      // Clear pending
+      setPendingOffer(null);
+      setPendingCallerId(null);
+    } catch (error: any) {
+      console.error("Call accept error:", error);
+      toast.error("Failed to accept call");
+      cleanupCall();
+    }
+  };
+
+  const cleanupCall = () => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+
+    [localVideoRef, remoteVideoRef, localAudioRef, remoteAudioRef].forEach(ref => {
+      if (ref.current) ref.current.srcObject = null;
+    });
+
+    setInCall(false);
+    setCalling(false);
+    setIncomingCall(null);
+    setCallType(null);
+  };
+
+  const hangUp = () => {
+    if (friend?._id) {
+      socket?.emit("call-hangup", { toUserId: friend._id });
+    }
+    cleanupCall();
+  };
+
+  // Socket listeners
+  useEffect(() => {
+    if (!socket || !friend?._id) return;
+
+    socket.on("incoming-call", ({ fromUserId, offer, callType }: { fromUserId: string; offer: RTCSessionDescriptionInit; callType: 'audio' | 'video' }) => {
+      setPendingCallerId(fromUserId);
+      setPendingOffer(offer); // store the offer temporarily
+      setCallType(callType);
+      setIncomingCall({ fromUserId, type: callType });
+      toast(`Incoming ${callType} call from ${friend.name}`);
+    });
+
+    socket.on("call-answered", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
+      if (peerConnectionRef.current) {
+        await peerConnectionRef.current.setRemoteDescription(answer);
+        setInCall(true);
+        setCalling(false);
+      }
+    });
+
+    socket.on("ice-candidate", async ({ candidate }: { candidate: RTCIceCandidateInit }) => {
+      if (peerConnectionRef.current) {
+        await peerConnectionRef.current.addIceCandidate(candidate);
+      }
+    });
+
+    socket.on("call-ended", cleanupCall);
+
+    return () => {
+      socket.off("incoming-call");
+      socket.off("call-answered");
+      socket.off("ice-candidate");
+      socket.off("call-ended");
+    };
+  }, [socket, friend]);
+
+  ////////////////////////////////////////
+
   console.log('messages:', messages);
   
   // auto-scroll to bottom
@@ -270,17 +593,65 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
           </span>
         </div>
         <div className='flex items-center gap-2 pr-1'>
-          <span title='Voice call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
-          <IoCall className='text-[21px] text-[#aa00ff] cursor-pointer' />
-          </span>
-          <span title='Video call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
-          <IoVideocam className='text-[22px] text-[#aa00ff] cursor-pointer' />
-          </span>
-          <span title='Conversation info' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+          {inCall || calling ? (
+            <button title='End call' onClick={hangUp} className="p-3 bg-red-500 rounded-full text-white">
+              <PhoneOff className="w-5 h-5" />
+            </button>
+          ) : (
+            <>
+              <button onClick={() => startCall('audio')} title='Voice call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+                <IoCall className='text-[21px] text-[#aa00ff] cursor-pointer' />
+              </button>
+              <button onClick={() => startCall('video')} title='Video call' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+                <IoVideocam className='text-[22px] text-[#aa00ff] cursor-pointer' />
+              </button>
+            </>
+          )}
+          
+          <button title='Conversation info' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
             <PiDotsThreeCircleFill className='text-[22px] text-[#aa00ff] cursor-pointer' />
-          </span>
+          </button>
         </div>
       </div>
+
+      {/* Call UI */}
+      {inCall && (
+        <div className="flex-1 flex flex-col items-center justify-center bg-black">
+          {callType === 'video' && (
+            <>
+              <video ref={remoteVideoRef} autoPlay playsInline className="w-full max-w-2xl rounded-lg" />
+              <video ref={localVideoRef} autoPlay playsInline muted className="fixed bottom-4 right-4 w-48 rounded-lg border-4 border-white" />
+            </>
+          )}
+          {callType === 'audio' && (
+            <div className="text-white text-2xl">
+              Voice call with {friend?.name}
+            </div>
+          )}
+          <audio ref={remoteAudioRef} autoPlay />
+          <audio ref={localAudioRef} autoPlay muted />
+        </div>
+      )}
+
+      {/* Incoming Call Modal */}
+      {incomingCall && !inCall && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl text-center">
+            <p className="text-2xl mb-4">
+              Incoming {incomingCall.type} call from {friend?.name}
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button onClick={acceptCall} className="px-8 py-4 bg-green-500 text-white rounded-full text-xl">
+                Accept
+              </button>
+              <button onClick={hangUp} className="px-8 py-4 bg-red-500 text-white rounded-full text-xl">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* chat */}
       <div className='w-full h-full mt-4 mb-12 flex-1 scrollbar-component p-4 pt-12 space-y-4'>
         {messages.map((msg, index) => (
@@ -309,6 +680,93 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
               <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             )}
+            {msg.type === 'voice' && msg.mediaUrl && (
+              <>
+  <div className={`relative px-4 py-3 rounded-3xl flex items-center gap-3 ${
+    msg.sender._id === user?.id 
+      ? 'bg-[#0084ff] rounded-br-none' 
+      : 'bg-[#e4e6eb] rounded-bl-none'
+  }`}>
+    {/* Play/Pause Button */}
+    <button onClick={() => togglePlay(msg._id)} className="flex-shrink-0 z-10">
+      {playingId === msg._id ? (
+        <PauseCircle className={`w-10 h-10 ${
+          msg.sender._id === user?.id ? 'text-white' : 'text-[#0084ff]'
+        }`} />
+      ) : (
+        <PlayCircle className={`w-10 h-10 ${
+          msg.sender._id === user?.id ? 'text-white' : 'text-[#0084ff]'
+        }`} />
+      )}
+    </button>
+
+    {/* Waveform + Seek Slider in One Line */}
+    <div className="flex-1 relative flex items-center">
+      {/* Static Waveform Bars */}
+      <div className="absolute inset-0 flex items-center gap-1 pointer-events-none">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <div
+            key={i}
+            className={`w-1 rounded-full ${
+              msg.sender._id === user?.id ? 'bg-white/40' : 'bg-[#0084ff]/40'
+            }`}
+            style={{ height: `${9 + (i % 4) * 8}px` }}
+          />
+        ))}
+      </div>
+
+      {/* Seek Slider - Over Waveform */}
+      <input
+      title="Seek"
+        type="range"
+        min="0"
+        max={audioRefs.current[msg._id]?.duration || 0}
+        value={currentTimes[msg._id] || 0}
+        onChange={(e) => handleSeek(msg._id, parseFloat(e.target.value))}
+        className={`w-full h-8 bg-transparent cursor-pointer z-10 appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0`}
+        style={{
+          background: `linear-gradient(to right, ${
+            msg.sender._id === user?.id ? 'rgba(255,255,255,0.6)' : '#0084ff'
+          } 0%, ${
+            msg.sender._id === user?.id ? 'rgba(255,255,255,0.6)' : '#0084ff'
+          } ${(currentTimes[msg._id] || 0) / (audioRefs.current[msg._id]?.duration || 1) * 100}%, ${
+            msg.sender._id === user?.id ? 'rgba(255,255,255,0.2)' : 'rgba(0,132,255,0.2)'
+          } ${(currentTimes[msg._id] || 0) / (audioRefs.current[msg._id]?.duration || 1) * 100}%, ${
+            msg.sender._id === user?.id ? 'rgba(255,255,255,0.2)' : 'rgba(0,132,255,0.2)'
+          } 100%)`,
+        }}
+      />
+    </div>
+
+    {/* Duration */}
+    <span className={`text-sm font-medium min-w-[70px] text-right ${
+      msg.sender._id === user?.id ? 'text-white/90' : 'text-gray-700'
+    }`}>
+      {currentTimes[msg._id] !== undefined ? formatTime(currentTimes[msg._id]) : "0:00"} / {durations[msg._id] || "0:00"}
+    </span>
+
+    {/* Hidden Audio */}
+    <audio
+      ref={(el) => {
+        if (el && msg.mediaUrl) {
+          audioRefs.current[msg._id] = el;
+          el.onloadedmetadata = () => {
+            setDurations(prev => ({ ...prev, [msg._id]: formatTime(el.duration) }));
+          };
+          el.ontimeupdate = () => {
+            setCurrentTimes(prev => ({ ...prev, [msg._id]: el.currentTime }));
+          };
+          el.onended = () => setPlayingId(null);
+        }
+      }}
+      src={msg.mediaUrl}
+    />
+    
+  </div>
+  <p className={`text-[12px] ${msg.sender._id === user?.id ? 'text-end' : ''}`}>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+  </>
+)}
+            
               {/* Text Content */}
             {msg.text && msg.text.trim() !== '' && (
               <div className={`${msg.sender._id === user?.id && msg.type === 'text' ? 'bg-[#3050f9] text-gray-50' : 'bg-gray-200 text-gray-950'} px-3 py-1 rounded-full`}>
@@ -360,9 +818,14 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
       {/* input */}
       <div className='absolute bottom-0 left-0 w-full px-2 py-3 flex items-center rounded-b-xl justify-between bg-white shadow-xs'>
         <div className='flex items-center gap-2'>
-          <span className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
-            <HiMiniPlusCircle className='text-[22px] text-[#3050f9] cursor-pointer' />
-          </span>
+          <button 
+          title={recording ? 'Stop Recording' : 'Start Recording'}
+          onClick={toggleRecording}
+          className={`flex items-center justify-center p-[6px] rounded-full ${recording ? 'bg-red-500 animate-pulse' : 'bg-transparent hover:bg-gray-200'}`}>
+            {recording ? <MicOff className='text-[18px] text-gray-950 cursor-pointer' /> : <Mic className='text-[18px] text-[#3050f9] cursor-pointer' />}
+            {/* <MdSettingsVoice className='text-[22px] text-[#3050f9] cursor-pointer' /> */}
+            
+          </button>
           <span 
           onClick={() => fileInputRef.current?.click()}
           className='flex items-center justify-center p-[8px] rounded-full hover:bg-gray-200'>
