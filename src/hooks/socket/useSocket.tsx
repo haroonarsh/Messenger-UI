@@ -96,7 +96,7 @@ export const useSocket = () => {
         }
     };
     
-    const sendMessage = (payload: { conversationId: string; text?: string; type?: "text" | "image" | "video"; mediaUrl?: string }) => {
+    const sendMessage = (payload: { conversationId: string; text?: string; type?: "text" | "image" | "video" | "file" | "audio" | "voice"; mediaUrl?: string }) => {
         socket?.emit("send-message", payload);
     };
 
