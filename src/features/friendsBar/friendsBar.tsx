@@ -13,6 +13,8 @@ import { findOrCreateConversation } from '@/services/chat/chat.service';
 import { getFriends } from '@/services/user/user.service';
 import { Friend } from '@/libs/types';
 import { useOnlineUsers } from '@/context/OnlineUsersContext';
+import { useUnread } from '@/context/UnreadContext';
+import { Badge } from '@/components/ui/badge';
 
 
 function FriendsBar() {
@@ -25,6 +27,7 @@ function FriendsBar() {
     const { socket } = useSocket();
     const router = useRouter();
     const { onlineUsers } = useOnlineUsers();
+    const { unreadCounts } = useUnread();
 
     console.log('friends:', friends);
     console.log('onlines:', onlineUsers);
@@ -122,6 +125,12 @@ function FriendsBar() {
               <BsThreeDots className='text-md text-gray-500' />
             </span>
           </div>
+          {/* Unread Badge */}
+    {unreadCounts[friend._id] > 0 && (
+      <Badge className="absolute top-6 right-2 bg-red-500 text-white">
+        {unreadCounts[friend._id]}
+      </Badge>
+    )}
         </div>
           ))
         )}
