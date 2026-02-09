@@ -16,7 +16,7 @@ import { MdSettingsVoice } from "react-icons/md";
 import { useSocket } from '@/hooks/socket/useSocket';
 import { useAuth } from '@/hooks/auth/useAuth';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '@/libs/api';
 import api from '@/utils/api';
@@ -26,6 +26,7 @@ import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { IoVideocam } from "react-icons/io5";
 import { IoCall } from "react-icons/io5";
 import { PhoneOff, Mic, MicOff, PlayCircle, PauseCircle } from 'lucide-react';
+import { useUnread } from '@/context/UnreadContext';
 
 interface Message {
   _id: string;
@@ -46,11 +47,13 @@ interface Message {
 interface FriendChatProps {
   conversationId: string;
   friend: User | null;
+  onToggleInfo?: () => void;
 }
 
-function FriendChat({ conversationId, friend }: FriendChatProps) {
+function FriendChat({ conversationId, friend, onToggleInfo }: FriendChatProps) {
   const { socket, joinConversation, leaveConversaton, sendMessage } = useSocket();
   const { user } = useAuth();
+  const { resetUnread } = useUnread();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -91,21 +94,6 @@ function FriendChat({ conversationId, friend }: FriendChatProps) {
   const localAudioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-
-
-  // Calculate durations for voice messages
-  // useEffect(() => {
-  //   Object.keys(audioRefs.current).forEach(id => {
-  //     const audio = audioRefs.current[id];
-  //     if (audio) {
-  //       audio.onloadedmetadata = () => {
-  //       const mins = Math.floor(audio.duration / 60);
-  //       const secs = Math.floor(audio.duration % 60);
-  //       setDurations(prev => ({ ...prev, [id]: `${mins}:${secs.toString().padStart(2, '0')}` }));
-  //     };
-  //     }
-  //   });
-  // }, []);
 
   // Toggle play/pause function
   const togglePlay = (messageId: string) => {
@@ -540,6 +528,13 @@ const formatTime = (seconds: number) => {
     };
   }, [socket, user?.id]);
 
+  // Mark messages as read when opening chat
+    useEffect(() => {
+    if (friend?._id) {
+      resetUnread(friend._id);
+    }
+  }, [friend?._id]);
+
   const handleSend = () => {
     if (!input.trim() || !conversationId) return;
 
@@ -608,7 +603,7 @@ const formatTime = (seconds: number) => {
             </>
           )}
           
-          <button title='Conversation info' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
+          <button onClick={onToggleInfo} title='Conversation info' className='flex items-center justify-center p-[6px] rounded-full hover:bg-gray-200'>
             <PiDotsThreeCircleFill className='text-[22px] text-[#aa00ff] cursor-pointer' />
           </button>
         </div>
