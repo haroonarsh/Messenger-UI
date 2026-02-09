@@ -21,6 +21,7 @@ function page() {
   const params = useParams();
   const [friend, setFriend] = useState<User | null>(null);
   const [isFriendLoading, setIsFriendLoading] = useState(true);
+  const [showFriendInfo, setShowFriendInfo] = useState(false);
   
   useEffect(() => {
     if (!loading && !user || user === null) {
@@ -57,14 +58,18 @@ function page() {
     fetchConversation();
   }, [params, user]);
 
+  const toggleFriendInfo = () => {
+    setShowFriendInfo(prev => !prev);
+  }
+
   if (loading) return loadingToast();
 
   return (
     <main className='bg-[#f5f5f5] h-screen overflow-hidden w-full flex items-start justify-start'>
       <Sidebar data={user as IUser} />
       <FriendsBar />
-      <FriendChat conversationId={params.id as string} friend={friend} />
-      <FriendInfo friend={friend} />
+      <FriendChat conversationId={params.id as string} friend={friend} onToggleInfo={toggleFriendInfo} />
+      {showFriendInfo && friend && <FriendInfo friend={friend} onclose={() => setShowFriendInfo(false)} />}
       <Toaster />
     </main>
   )
