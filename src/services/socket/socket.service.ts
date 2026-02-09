@@ -9,20 +9,21 @@ export const initSocket = () => {
     if (!token || socket) return; // already initialized
 
     socket = io(SOCKET_URL, {
+        withCredentials: true,
         auth: { token },
         reconnection: true,
+        transports: ["websocket", "polling"],
         reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
     });
 
     socket.on("connect", () => {
         console.log("Socket connected");
-        // jion user room automatically
+        // Join user room automatically
         socket?.emit("join", { userId: token });
     })
 
     socket.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
+        console.error("Socket connection error:", error.message);
     });
 
     socket.on("disconnect", (reason) => {

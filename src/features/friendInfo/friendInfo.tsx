@@ -19,9 +19,10 @@ import { User } from '@/libs/types';
 
 interface FriendInfoProps {
   friend: User | null;
+  onclose?: () => void;
 }
 
-function FriendInfo( { friend }: FriendInfoProps ) {
+function FriendInfo( { friend, onclose }: FriendInfoProps ) {
   const [info, setInfo] = useState(false);
   const [members, setMembers] = useState(false);
   const [media, setMedia] = useState(false);

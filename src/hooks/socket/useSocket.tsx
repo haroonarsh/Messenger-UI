@@ -7,12 +7,42 @@ import { disconnectSocket, getSocket, initSocket } from "@/services/socket/socke
 import { get } from "http";
 import { User } from "@/libs/types";
 import toast from "react-hot-toast";
+import { useUnread } from "@/context/UnreadContext";
 
 export const useSocket = () => {
     const { user, logout } = useAuth();
     const [socket, setSocket] = useState<Socket | null>(null);
+    const { incrementUnread } = useUnread();
+    
+    // GLOBAL new message listener (runs on every page)
+ useEffect(() => {
+    if (!socket || !user?.id) return;
 
+    const handleNewMessage = (msg: any) => {
+      // Only notify if the message is NOT from current user
+      if (msg.sender._id !== user.id) {
+        toast(`${msg.sender.username || "Someone"}: ${msg.text || "New message"}`, {
+          icon: '💬',
+          position: "top-right",
+          duration: 4000,
+        });
 
+        // Increment unread badge for the sender
+        incrementUnread(msg.sender._id);
+      }
+
+      // Always add message to current chat if viewing it
+      // (your existing add to messages logic)
+    };
+
+    socket.on("new-message", handleNewMessage);
+
+    return () => {
+      socket.off("new-message", handleNewMessage);
+    };
+  }, [socket, user?._id, incrementUnread]);
+
+    // Friend request and acceptance notifications
     useEffect(() => {
         const currentSocket = getSocket();
         if (currentSocket) {
@@ -96,7 +126,7 @@ export const useSocket = () => {
         }
     };
     
-    const sendMessage = (payload: { conversationId: string; text: string }) => {
+    const sendMessage = (payload: { conversationId: string; text?: string; type?: "text" | "image" | "video" | "file" | "audio" | "voice"; mediaUrl?: string }) => {
         socket?.emit("send-message", payload);
     };
 

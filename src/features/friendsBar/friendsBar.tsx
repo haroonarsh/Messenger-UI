@@ -13,6 +13,8 @@ import { findOrCreateConversation } from '@/services/chat/chat.service';
 import { getFriends } from '@/services/user/user.service';
 import { Friend } from '@/libs/types';
 import { useOnlineUsers } from '@/context/OnlineUsersContext';
+import { useUnread } from '@/context/UnreadContext';
+import { Badge } from '@/components/ui/badge';
 
 
 function FriendsBar() {
@@ -25,6 +27,7 @@ function FriendsBar() {
     const { socket } = useSocket();
     const router = useRouter();
     const { onlineUsers } = useOnlineUsers();
+    const { unreadCounts } = useUnread();
 
     console.log('friends:', friends);
     console.log('onlines:', onlineUsers);
@@ -103,8 +106,8 @@ function FriendsBar() {
       <div className='flex items-center justify-start gap-2 bg-gray-100 hover:bg-gray-200 cursor-pointer px-[6px] py-[3px] rounded-full'>
         <IoSearch className='text-3xl pl-2 text-gray-500'/>
         <input type="text" placeholder='Search Messenger' className='text-gray-950 focus:outline-none'/>
-      </div>
-      <div className='flex flex-col scrollbar-component pr-1'>
+      </div>  
+      <div className='flex-col scrollbar-component pr-1 w-full h-full flex-1'>
         {friends.length === 0 ? (
           <p className='text-center text-gray-500 mt-4'>No friends found.</p>
         ) : (
@@ -122,6 +125,12 @@ function FriendsBar() {
               <BsThreeDots className='text-md text-gray-500' />
             </span>
           </div>
+          {/* Unread Badge */}
+    {unreadCounts[friend._id] > 0 && (
+      <Badge className="absolute top-6 right-2 bg-red-500 text-white">
+        {unreadCounts[friend._id]}
+      </Badge>
+    )}
         </div>
           ))
         )}
