@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { X } from "lucide-react"
 import { User } from "@/libs/types"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { useSocket } from "@/hooks/socket/useSocket"
@@ -13,16 +12,16 @@ import { searchUsers, sendFriendRequest } from "@/services/user/user.service"
 import toast from "react-hot-toast"
 
 // Mock user data
-const MOCK_USERS = [
-  { id: 1, name: "Alice Johnson", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Alice" },
-  { id: 2, name: "Bob Smith", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Bob" },
-  { id: 3, name: "Carol White", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Carol" },
-  { id: 4, name: "David Brown", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=David" },
-  { id: 5, name: "Emma Davis", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Emma" },
-  { id: 6, name: "Frank Miller", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Frank" },
-  { id: 7, name: "Grace Lee", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Grace" },
-  { id: 8, name: "Henry Wilson", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Henry" },
-]
+// const MOCK_USERS = [
+//   { id: 1, name: "Alice Johnson", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Alice" },
+//   { id: 2, name: "Bob Smith", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Bob" },
+//   { id: 3, name: "Carol White", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Carol" },
+//   { id: 4, name: "David Brown", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=David" },
+//   { id: 5, name: "Emma Davis", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Emma" },
+//   { id: 6, name: "Frank Miller", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Frank" },
+//   { id: 7, name: "Grace Lee", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Grace" },
+//   { id: 8, name: "Henry Wilson", avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=Henry" },
+// ]
 
 interface InviteModalProps {
   open: boolean

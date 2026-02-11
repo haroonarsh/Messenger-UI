@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth"
 import { Socket } from "socket.io-client";
 import { disconnectSocket, getSocket, initSocket } from "@/services/socket/socket.service";
-import { get } from "http";
 import { User } from "@/libs/types";
 import toast from "react-hot-toast";
 import { useUnread } from "@/context/UnreadContext";
@@ -18,7 +17,7 @@ export const useSocket = () => {
  useEffect(() => {
     if (!socket || !user?.id) return;
 
-    const handleNewMessage = (msg: any) => {
+    const handleNewMessage = (msg: { sender: User; text: string }) => {
       // Only notify if the message is NOT from current user
       if (msg.sender._id !== user.id) {
         toast(`${msg.sender.username || "Someone"}: ${msg.text || "New message"}`, {

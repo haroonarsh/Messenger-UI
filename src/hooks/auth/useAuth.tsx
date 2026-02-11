@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, ReactNode, useEffect, useContext } from "react";
 import { authService } from "@/services/auth/auth.service";
-import { ErrorResponse, IUser, LoginRequest, RegisterRequest } from "@/libs/types";
+import { IUser, LoginRequest, RegisterRequest } from "@/libs/types";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Cookies from "js-cookie";
@@ -15,8 +15,6 @@ interface AuthContextType {
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
-
-const notify = () => toast.success("Logged in successfully", { duration: 3000, position: "top-right", icon: "🚀"});
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (fetchUser !== null && fetchedUser !== undefined) {
                 router.push("/main");
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Error fetching user:", error);
             setUser(null);  
         } finally {
@@ -45,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (token) {
             fetchUser();
         }
-    }, []);
+    }, [fetchUser]);
 
     if (loading === true) {
         toast.loading("Loading...", { duration: 3000, position: "top-right"});
@@ -58,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await fetchUser();
             toast.success("Logged in successfully", { duration: 3000, position: "top-right", icon: "🚀"});
             router.push("/main")
-        } catch (error: ErrorResponse | any) {
+        } catch (error: any) {
             console.log("Error logging in:", error.response.data.message);
             toast.error(error.response.data.message, { duration: 3000, position: "top-right"});
         } finally {
@@ -73,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await fetchUser();
             toast.success("Registered successfully", { duration: 3000, position: "top-right", icon: "🚀"}); 
             router.push("/main")
-        } catch (error: ErrorResponse | any) {
+        } catch (error: any) {
             console.log("Error logging in:", error.response.data.message);
             toast.error(error.response.data.message, { duration: 3000, position: "top-right"});
         } finally {
@@ -87,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
             router.push("/");
             toast.success("Logged out successfully", { duration: 3000, position: "top-right"});
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error logging out:", error);
             toast.error("Error logging out", { duration: 3000, position: "top-right"});
         }

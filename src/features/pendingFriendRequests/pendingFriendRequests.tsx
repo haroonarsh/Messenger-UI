@@ -1,13 +1,11 @@
 // components/PendingFriendRequests.tsx
 
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -44,7 +42,6 @@ interface Props {
 
 export default function PendingFriendRequests({ open, onOpenChange }: Props) {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
-  const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -54,13 +51,10 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
   // Fetch pending requests
   const fetchRequests = async () => {
     try {
-      setLoading(true);
       const data = await getPendingRequests();
       setRequests(data);
     } catch (error: any) {
       toast.error(error.response.data.message || 'Failed to load requests');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -96,7 +90,7 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
       if (res.conversationId) {
         router.push(`/chat/${res.conversationId}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error('Failed to accept request');
     } finally {
       setProcessingId(null);
@@ -109,7 +103,7 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
       await rejectFriendRequest(requestId); // We'll add this function
       toast.success('Request declined');
       setRequests(prev => prev.filter(r => r._id !== requestId));
-    } catch (error) {
+    } catch (error: any) {
       toast.error('Failed to reject request');
     } finally {
       setProcessingId(null);

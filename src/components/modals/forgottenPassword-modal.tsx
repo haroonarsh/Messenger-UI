@@ -7,16 +7,20 @@ import { FaChevronRight } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import { useRouter } from 'next/navigation';
 
+interface ForgottenPasswordProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
-function ForgottenPassword({isOpen, onClose}: any) {
+function ForgottenPassword({isOpen, onClose}: ForgottenPasswordProps) {
 
     const router = useRouter();
 
     // when user click outside the modal, close it
     React.useEffect(() => {
-        const handleOutsideClick = (event: any) => {
-            if (event.target.classList.contains('fixed')) {
-                onClose();
+        const handleOutsideClick = (event: MouseEvent) => {
+            if ((event.target as Element).classList.contains('fixed')) {
+              onClose();
             }
         };
         document.addEventListener('click', handleOutsideClick);

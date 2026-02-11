@@ -18,7 +18,7 @@ function Helpcentre() {
                 <MdKey className='text-[50px] border border-blue-600 bg-blue-600 text-white rounded-full p-3'/>
                 <span>
                 <h2 className='text-[19px] text-[#0099ff] font-semibold font-sans'>Need help with logging in?</h2>
-                <p className='text-[15px] font-sans font-extralight text-gray-600'>Learn what to do if you're having trouble with getting back on the Messenger app.</p>
+                <p className='text-[15px] font-sans font-extralight text-gray-600'>Learn what to do if you&apos;re having trouble with getting back on the Messenger app.</p>
                 </span>
             </div>
             <button type="submit" className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-[15px] font-semibold font-sans cursor-pointer">Get Help</button>
@@ -29,10 +29,10 @@ function Helpcentre() {
                 <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Ask Meta AI on Messenger</h2>
                 <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Generate images with Meta AI in chats on Messenger</h2>
                 <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Create a channel on Facebook or Messenger</h2>
-                <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Block someone's profile on Messenger</h2>
+                <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Block someone&apos;s profile on Messenger</h2>
                 <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>Unable to send messages on Messenger</h2>
                 <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff] '>What end-to-end encryption on Messenger means and how it works</h2>
-                <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>What to do if someone's bothering you on Messenger</h2>
+                <h2 className='cursor-pointer w-fit border-b-[1px] border-transparent hover:border-[#0a7cff]'>What to do if someone&apos;s bothering you on Messenger</h2>
             </div>
             <Image src="/help1.png" alt="Help Image" width={500} height={500} className="max-w-full h-auto" />
         </div>

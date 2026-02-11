@@ -13,7 +13,6 @@ import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast';
 
 const loadingToast = () => toast.loading("Loading...", { duration: 3000, position: "top-right"});
-const errorToast = () => toast.error("Something went wrong");
 
 function page() {
   const { loading, user } = useAuth();

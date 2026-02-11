@@ -1,13 +1,12 @@
-// frontend/src/components/GlobalMessageListener.tsx
-
 "use client";
 
 import { useUnread } from '@/context/UnreadContext';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSocket } from '@/hooks/socket/useSocket';
 import { useEffect, useRef } from 'react';
-
 import toast from 'react-hot-toast';
+
+
 
 export default function GlobalNotificationListener() {
   const { socket } = useSocket();
@@ -18,7 +17,7 @@ export default function GlobalNotificationListener() {
   useEffect(() => {
     if (!socket || !user?.id) return;
 
-    const handleNotification = (data: { message: any; senderId: string }) => {
+    const handleNotification = (data: { message: { sender: { _id: string; name: string; username: string; }; text: string }; senderId: string }) => {
       // Only notify if not from current user
       if (data.senderId !== user.id) {
         toast(`${data.message.sender.name}: ${data.message.text || "New message"}`, {
