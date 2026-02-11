@@ -141,7 +141,7 @@ function Features() {
               Share large files 
             </h1>
             <p className="text-md md:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg">
-              Who needs email? Whether it's a Word, PDF or Excel doc, you can send files up to 100 MB in Messenger.
+              Who needs email? Whether it&apos;s a Word, PDF or Excel doc, you can send files up to 100 MB in Messenger.
             </p>
           </div>
           {/* Right Content */}
@@ -180,7 +180,7 @@ function Features() {
               Keep your <br /> secrets secret 
             </h1>
             <p className="text-md md:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-lg">
-              Choose how long your messages stick around for with messages that disappear after they've been sent.
+              Choose how long your messages stick around for with messages that disappear after they&apos;ve been sent.
             </p>
           </div>
           {/* Right Content */}

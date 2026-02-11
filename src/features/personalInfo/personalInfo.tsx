@@ -11,13 +11,17 @@ import { HiOutlineMenuAlt2 } from "react-icons/hi";
 import { TbLogout } from "react-icons/tb";
 import { useAuth } from '@/hooks/auth/useAuth';
 
-function PersonalInfo({ open, isClose}: any) {
+interface Props {
+    open: boolean;
+    isClose: () => void;
+}
+function PersonalInfo({ open, isClose}: Props) {
     const { logout } = useAuth();
 
     // close if clicked outside
     useEffect(() => {
-        const handleOutsideClick = (event: any) => {
-            if (event.target.classList.contains('fixed')) {
+        const handleOutsideClick = (event: MouseEvent) => {
+            if ((event.target as Element).classList.contains('fixed')) {
                 isClose();
             }
         };

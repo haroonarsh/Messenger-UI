@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,9 +42,9 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const file = (e.target as any).avatar.files[0];
+      const file = (e.target as HTMLFormElement).avatar.files[0];
       await register(formData, file);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering user:", error);
     }
   }
