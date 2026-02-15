@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast';
 
-function page() {
+function Page() {
   const { loading, user } = useAuth();
   const router = useRouter();
 
@@ -32,4 +32,4 @@ function page() {
   )
 }
 
-export default page
+export default Page

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import FriendChat from '@/features/friendChat/friendChat'
+import FriendChat from '@/features/friendChat/friendChat';
 import FriendInfo from '@/features/friendInfo/friendInfo'
 import FriendsBar from '@/features/friendsBar/friendsBar'
 import Sidebar from '@/features/sidebar/sidebar'
@@ -14,12 +14,11 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const loadingToast = () => toast.loading("Loading...", { duration: 3000, position: "top-right"});
 
-function page() {
+function Page() {
   const { loading, user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const [friend, setFriend] = useState<User | null>(null);
-  const [isFriendLoading, setIsFriendLoading] = useState(true);
   const [showFriendInfo, setShowFriendInfo] = useState(false);
   
   useEffect(() => {
@@ -74,4 +73,4 @@ function page() {
   )
 }
 
-export default page
+export default Page
