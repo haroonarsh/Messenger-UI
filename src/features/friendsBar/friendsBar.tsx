@@ -34,7 +34,7 @@ function FriendsBar() {
         setLoading(true);
         const data = await getFriends();
         setFriends(data);
-      } catch (error) {
+      } catch (error: unknown) {
         toast.error('Failed to load friends');
       } finally {
         setLoading(false);
@@ -73,7 +73,7 @@ function FriendsBar() {
         
         const conv = await findOrCreateConversation([user?.id || '', friendId]);
         router.push(`/chat/${conv._id}`);
-      } catch (error) {
+      } catch (error: unknown) {
         toast.error('Failed to open chat');
       }
     };

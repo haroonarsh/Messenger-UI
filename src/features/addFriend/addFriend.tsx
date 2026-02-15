@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { User } from "@/libs/types"
 import { useAuth } from "@/hooks/auth/useAuth"
-import { useSocket } from "@/hooks/socket/useSocket"
 import { searchUsers, sendFriendRequest } from "@/services/user/user.service"
 import toast from "react-hot-toast"
 
@@ -30,14 +29,12 @@ interface InviteModalProps {
 
 export function InviteModal({ open, onOpenChange }: InviteModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([])
 
   ///////////////
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [debounceTime, setDebounceTime] = useState<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
-  const { socket } = useSocket();
 
   // Debounce search
   useEffect(() => {
@@ -50,7 +47,7 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
           const searchPayload = { q: searchQuery };
           const data = await searchUsers(searchPayload);
           setUsers(data.filter(u => u._id !== user?._id)); // Exclude self
-        } catch (error) {
+        } catch (error: unknown) {
           toast.error("Error searching users");
           setUsers([]);
         } finally {
@@ -75,8 +72,10 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
       toast.success("Friend request sent");
       setUsers(prev => prev.filter(u => u._id !== userId)); // Remove from list
       // Socket handles recipient notification
-    } catch (error: any) {
-      toast.error(error.response.data.message || "Failed to send request");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to send friend request");
+      }
     }
   };
 

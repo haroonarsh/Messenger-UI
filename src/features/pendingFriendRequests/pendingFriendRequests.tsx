@@ -53,8 +53,8 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
     try {
       const data = await getPendingRequests();
       setRequests(data);
-    } catch (error: any) {
-      toast.error(error.response.data.message || 'Failed to load requests');
+    } catch (error: unknown) {
+      toast.error('Failed to load pending requests');
     }
   };
 
@@ -90,7 +90,7 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
       if (res.conversationId) {
         router.push(`/chat/${res.conversationId}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to accept request');
     } finally {
       setProcessingId(null);
@@ -103,7 +103,7 @@ export default function PendingFriendRequests({ open, onOpenChange }: Props) {
       await rejectFriendRequest(requestId); // We'll add this function
       toast.success('Request declined');
       setRequests(prev => prev.filter(r => r._id !== requestId));
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to reject request');
     } finally {
       setProcessingId(null);

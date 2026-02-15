@@ -9,6 +9,7 @@ import { Upload, User } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
 import { useAuth } from "@/hooks/auth/useAuth"
+import toast from "react-hot-toast"
 
 export default function SignupPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -44,8 +45,10 @@ export default function SignupPage() {
     try {
       const file = (e.target as HTMLFormElement).avatar.files[0];
       await register(formData, file);
-    } catch (error: any) {
-      console.error("Error registering user:", error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to register");
+      }
     }
   }
 
