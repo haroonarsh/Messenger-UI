@@ -134,7 +134,6 @@ const formatTime = (seconds: number) => {
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const url = URL.createObjectURL(audioBlob);
 
         // Upload
         uploadVoice(audioBlob);
@@ -147,7 +146,7 @@ const formatTime = (seconds: number) => {
       mediaRecorder.start();
       mediaRecorderRef.current = mediaRecorder;
       setRecording(true);
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to access microphone");
     }
   };
@@ -189,7 +188,7 @@ const formatTime = (seconds: number) => {
         mediaUrl,
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to upload voice message");
     }
   }
@@ -251,18 +250,11 @@ const formatTime = (seconds: number) => {
         offer,
         payload: { callType: type }
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Call start error:", error);
-
-    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-      toast.error("Permission denied. Please allow microphone/camera access.");
-    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-      toast.error("No microphone or camera found.");
-    } else if (error.name === 'NotReadableError') {
-      toast.error("Device in use by another app.");
-    } else {
-      toast.error("Failed to access media devices. Check permissions.");
-    }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
 
     cleanupCall();
     }
@@ -302,9 +294,11 @@ const formatTime = (seconds: number) => {
       // Clear pending
       setPendingOffer(null);
       setPendingCallerId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Call accept error:", error);
-      toast.error("Failed to accept call");
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to accept call");
+      }
       cleanupCall();
     }
   };
@@ -434,7 +428,7 @@ const formatTime = (seconds: number) => {
       // Clear preview
       setPreviewUrl(null);
       setPreviewType(null);
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to upload media");
       setPreviewUrl(null);
       setPreviewType(null);

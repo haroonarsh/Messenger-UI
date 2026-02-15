@@ -56,9 +56,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await fetchUser();
             toast.success("Logged in successfully", { duration: 3000, position: "top-right", icon: "🚀"});
             router.push("/main")
-        } catch (error: any) {
-            console.log("Error logging in:", error.response.data.message);
-            toast.error(error.response.data.message, { duration: 3000, position: "top-right"});
+        } catch (error: unknown) {
+            console.log("Error logging in:", error);
+            if (error instanceof Error) {
+                toast.error(error.message || "Failed to log in", { duration: 3000, position: "top-right"});
+            }
         } finally {
             setLoading(false);
         }
@@ -71,9 +73,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await fetchUser();
             toast.success("Registered successfully", { duration: 3000, position: "top-right", icon: "🚀"}); 
             router.push("/main")
-        } catch (error: any) {
-            console.log("Error logging in:", error.response.data.message);
-            toast.error(error.response.data.message, { duration: 3000, position: "top-right"});
+        } catch (error: unknown) {
+            console.error("Error registering:", error);
+            if (error instanceof Error) {
+                toast.error(error.message || "Failed to register", { duration: 3000, position: "top-right"});
+            }
         } finally {
             setLoading(false);
         }
@@ -85,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
             router.push("/");
             toast.success("Logged out successfully", { duration: 3000, position: "top-right"});
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error logging out:", error);
             toast.error("Error logging out", { duration: 3000, position: "top-right"});
         }
