@@ -67,7 +67,7 @@ function Page() {
       <Sidebar data={user as IUser} />
       <FriendsBar />
       <FriendChat conversationId={params.id as string} friend={friend} onToggleInfo={toggleFriendInfo} />
-      {showFriendInfo && friend && <FriendInfo friend={friend} onclose={() => setShowFriendInfo(false)} />}
+      {showFriendInfo && friend && <FriendInfo friend={friend} />}
       <Toaster />
     </main>
   )

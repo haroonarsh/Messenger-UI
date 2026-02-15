@@ -21,19 +21,7 @@ import {
   rejectFriendRequest   // We'll create this in service
 } from '@/services/user/user.service';
 import { useRouter } from 'next/navigation';
-
-interface FriendRequest {
-  _id: string;
-  from: {
-    _id: string;
-    name: string;
-    username: string;
-    avatar?: {
-      url: string;
-    };
-  };
-  createdAt: string;
-}
+import { FriendRequest } from '@/libs/types';
 
 interface Props {
   open: boolean
