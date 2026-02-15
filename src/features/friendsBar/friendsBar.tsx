@@ -3,7 +3,6 @@ import { MdFacebook } from "react-icons/md";
 import { HiMiniPencilSquare } from "react-icons/hi2";
 import { IoSearch } from "react-icons/io5";
 import { BsThreeDots } from "react-icons/bs";
-import Image from 'next/image';
 import { InviteModal } from '../addFriend/addFriend';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSocket } from '@/hooks/socket/useSocket';
@@ -28,14 +27,7 @@ function FriendsBar() {
     const router = useRouter();
     const { onlineUsers } = useOnlineUsers();
     const { unreadCounts } = useUnread();
-
-    console.log('friends:', friends);
-    console.log('onlines:', onlineUsers);
-    console.log('online:', onlineUser);
-    console.log('currentUser:', user);
-    
-    
-    
+       
     // Fetch friends
     const fetchFriends = async () => {
       try {

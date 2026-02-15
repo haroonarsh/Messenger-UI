@@ -4,13 +4,10 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import ForgottenPassword from '../modals/forgottenPassword-modal'
 import { useAuth } from '@/hooks/auth/useAuth';
-import toast from 'react-hot-toast';
-
-const loadingToast = () => toast.loading("Loading...", { duration: 3000, position: "top-right"});
 
 function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const [payload, setPayload] = useState({
     emailOrUsername: '',
     password: ''

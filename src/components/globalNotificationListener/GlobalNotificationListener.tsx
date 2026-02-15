@@ -6,8 +6,6 @@ import { useSocket } from '@/hooks/socket/useSocket';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
-
-
 export default function GlobalNotificationListener() {
   const { socket } = useSocket();
   const { user } = useAuth();

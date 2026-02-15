@@ -58,13 +58,11 @@ function FriendChat({ conversationId, friend, onToggleInfo }: FriendChatProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
-  const [typing, setTyping] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const { onlineUsers } = useOnlineUsers();
   const skip = useRef(0);
   const limit = 30;
@@ -76,7 +74,6 @@ function FriendChat({ conversationId, friend, onToggleInfo }: FriendChatProps) {
   const [pendingOffer, setPendingOffer] = useState<RTCSessionDescriptionInit | null>(null);
   const [pendingCallerId, setPendingCallerId] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({}); 
@@ -138,7 +135,6 @@ const formatTime = (seconds: number) => {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(audioBlob);
-        setAudioUrl(url);
 
         // Upload
         uploadVoice(audioBlob);
@@ -193,10 +189,8 @@ const formatTime = (seconds: number) => {
         mediaUrl,
       });
 
-      setAudioUrl(null);
     } catch (error) {
       toast.error("Failed to upload voice message");
-      setAudioUrl(null);
     }
   }
 
