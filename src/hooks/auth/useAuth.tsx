@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const fetchedUser = await authService.getMe();
             setUser(fetchedUser);
+            console.log('Fetching user:', fetchedUser);
+            
             if (fetchUser !== null && fetchedUser !== undefined) {
                 router.push("/main");
             }
