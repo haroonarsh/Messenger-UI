@@ -1,5 +1,6 @@
 import { API_LOGIN, API_LOGOUT, API_ME, API_REGISTER } from "@/libs/api";
 import { LoginRequest, RegisterRequest, RegisterResponse } from "@/libs/types";
+import api from "@/utils/api";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -13,18 +14,17 @@ export const authService = {
         if (payload.bio) formData.append('bio', payload.bio);
         if (file) formData.append('avatar', file);
 
-        const res = await axios.post(`${API_REGISTER}`, formData, {
+        const res = await api.post(`${API_REGISTER}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
-            withCredentials: true
         });
 
         return res.data;
     },
 
     async login(payload: LoginRequest) {
-        const res = await axios.post(`${API_LOGIN}`, payload, { withCredentials: true });
+        const res = await axios.post(`${API_LOGIN}`, payload);
         return res.data;
     },
 
@@ -33,16 +33,13 @@ export const authService = {
         if (!token) throw new Error('No token found');
         console.log('token:', token);
         
-        const res = await axios.get(`${API_ME}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            } 
-        });
+        const res = await api.get(`${API_ME}`);
+
         return res.data;
     },
 
     async logout() {
-        const res = await axios.post(`${API_LOGOUT}`, {}, { withCredentials: true });
+        const res = await axios.post(`${API_LOGOUT}`, {});
         // Cookies.remove('token');
         return res.data;
     }
