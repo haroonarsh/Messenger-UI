@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(fetchedUser);
             console.log('Fetching user:', fetchedUser);
             
-            if (fetchUser !== null && fetchedUser !== undefined) {
+            if (fetchedUser !== null && fetchedUser !== undefined) {
                 router.push("/main");
             }
         } catch (error: unknown) {
@@ -44,8 +44,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const token = Cookies.get("token");
         if (token) {
             fetchUser();
+        } else {
+            setLoading(false);
         }
-    }, [fetchUser]);
+    }, []);
 
     if (loading === true) {
         toast.loading("Loading...", { duration: 3000, position: "top-right"});
