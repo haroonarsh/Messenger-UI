@@ -34,7 +34,7 @@ function Page() {
       if (!params || !user) return;
 
       try {
-        const response = await api.get(`${API_BASE_URL}/chat/conversations/${params.id}`);
+        const response = await api.get(`${API_BASE_URL}/api/chat/conversations/${params.id}`);
         const conversation = response.data;
 
         console.log('Fetched conversation:', conversation);

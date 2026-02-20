@@ -174,7 +174,7 @@ const formatTime = (seconds: number) => {
     formData.append("file", blob, "voice.webm");
 
     try {
-      const res = await api.post(`${API_BASE_URL}/upload/media`, formData, {
+      const res = await api.post(`${API_BASE_URL}/api/upload/media`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -412,7 +412,7 @@ const formatTime = (seconds: number) => {
     formData.append("file", file);
 
     try {
-      const res = await api.post(`${API_BASE_URL}/upload/media`, formData , {
+      const res = await api.post(`${API_BASE_URL}/api/upload/media`, formData , {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -441,7 +441,7 @@ const formatTime = (seconds: number) => {
       if ((!hasMore && messages.length > 0)) return;
       setLoading(true);
       try {
-        const res = await api.get(`${API_BASE_URL}/chat/messages/${conversationId}?skip=${skip.current}&limit=${limit}`);
+        const res = await api.get(`${API_BASE_URL}/api/chat/messages/${conversationId}?skip=${skip.current}&limit=${limit}`);
 
         if (res.data.length < limit) setHasMore(false);
         
