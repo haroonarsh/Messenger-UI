@@ -27,7 +27,7 @@ function HeroSection() {
   }
 
   useEffect(() => {
-    const token = Cookies.get("token");
+    const token = Cookies.get("jwt");
     console.log('Token in HeroSection:', token);
   }, []);
 

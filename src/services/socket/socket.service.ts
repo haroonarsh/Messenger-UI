@@ -5,7 +5,7 @@ import { SOCKET_URL } from "@/libs/api";
 let socket: Socket | null = null;
 
 export const initSocket = () => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('jwt');
     if (!token || socket) return; // already initialized
 
     socket = io(SOCKET_URL, {

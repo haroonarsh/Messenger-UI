@@ -5,7 +5,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 export const searchUsers = async (payload: SearchUserPayload): Promise<User[]> => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('jwt');
     if (!token) throw new Error('No token found');
     const response = await axios.get(`${API_SEARCH_USERS}${encodeURIComponent(payload.q)}`, {
         headers: {
@@ -22,7 +22,7 @@ export const searchUsers = async (payload: SearchUserPayload): Promise<User[]> =
 };
 
 export const sendFriendRequest = async (payload: SendFriendRequestPayload): Promise<{ message: string }> => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('jwt');
     if (!token) throw new Error('No token found');
     const response = await axios.post(`${API_SEND_FRIEND_REQUEST}${payload.userId}`, {}, {
         headers: {
@@ -39,7 +39,7 @@ export const sendFriendRequest = async (payload: SendFriendRequestPayload): Prom
 };
 
 export const getPendingRequests = async (): Promise<FriendRequest[]> => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('jwt');
     if (!token) throw new Error('No token found');
     const response = await axios.get(`${API_GET_PENDING_REQUESTS}`, {
         headers: {
@@ -57,7 +57,7 @@ export const getPendingRequests = async (): Promise<FriendRequest[]> => {
 };
 
 export const acceptFriendRequest = async (requestId: string): Promise<{ message: string; conversationId: string }> => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('jwt');
     if (!token) throw new Error('No token found');
     const response = await api.post(`${API_ACCEPT_FRIEND_REQUEST}${requestId}/accept`);
 
@@ -71,7 +71,7 @@ export const acceptFriendRequest = async (requestId: string): Promise<{ message:
 export const rejectFriendRequest = async (requestId: string): Promise<{ message: string }> => {
     const response = await axios.post(`${API_REJECT_FRIEND_REQUEST}${requestId}/reject`, {}, {
         headers: {
-            'Authorization': `Bearer ${Cookies.get('token')}`
+            'Authorization': `Bearer ${Cookies.get('jwt')}`
         },
         withCredentials: true
     });

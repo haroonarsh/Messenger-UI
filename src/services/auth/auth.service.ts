@@ -30,7 +30,7 @@ export const authService = {
     },
 
     async getMe() {
-        const token = Cookies.get('token');
+        const token = Cookies.get('jwt');
         if (!token) throw new Error('No token found');
         console.log('token:', token);
         
