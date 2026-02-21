@@ -18,6 +18,7 @@ export const authService = {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
+            withCredentials: true
         });
 
         return res.data;
@@ -33,7 +34,12 @@ export const authService = {
         if (!token) throw new Error('No token found');
         console.log('token:', token);
         
-        const res = await api.get(`${API_ME}`);
+        const res = await api.get(`${API_ME}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            withCredentials: true
+        });
 
         return res.data;
     },
