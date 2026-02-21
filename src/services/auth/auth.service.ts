@@ -21,16 +21,18 @@ export const authService = {
             withCredentials: true
         });
 
+        Cookies.set('token', res.data.token, { expires: 30 }); // Store token in cookie for 30 days
         return res.data;
     },
 
     async login(payload: LoginRequest) {
         const res = await axios.post(`${API_LOGIN}`, payload);
+        Cookies.set('token', res.data.token, { expires: 30 }); // Store token in cookie for 30 days
         return res.data;
     },
 
     async getMe() {
-        const token = Cookies.get('jwt');
+        const token = Cookies.get('token');
         if (!token) throw new Error('No token found');
         console.log('token:', token);
         

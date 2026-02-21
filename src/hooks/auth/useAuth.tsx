@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useEffect(() => {
-        const token = Cookies.get("jwt");
+        const token = Cookies.get("token");
         if (token) {
             fetchUser();
         } else {
