@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import ForgottenPassword from '../modals/forgottenPassword-modal'
 import { useAuth } from '@/hooks/auth/useAuth';
+import Cookies from "js-cookie";
 
 function HeroSection() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +25,11 @@ function HeroSection() {
     e.preventDefault()
     await login(payload)
   }
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    console.log('Token in HeroSection:', token);
+  }, []);
 
   return (
     <>
