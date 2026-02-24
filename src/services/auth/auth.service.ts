@@ -1,3 +1,5 @@
+'use client';
+
 import { API_LOGIN, API_LOGOUT, API_ME, API_REGISTER } from "@/libs/api";
 import { LoginRequest, RegisterRequest, RegisterResponse } from "@/libs/types";
 import api from "@/utils/api";
@@ -5,6 +7,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 export const authService = {
+
+    
+
     async register(payload: RegisterRequest, file?: File): Promise<RegisterResponse> {
         const formData = new FormData();
         formData.append('username', payload.username);
@@ -27,9 +32,13 @@ export const authService = {
     },
 
     async login(payload: LoginRequest) {
-        const res = await axios.post(`${API_LOGIN}`, payload);
+        const res = await api.post(`${API_LOGIN}`, payload);
+
+        console.log('login token:', res.data.token);
+        
         localStorage.setItem('token', res.data.token); // Store token in localStorage
         Cookies.set('token', res.data.token, { expires: 30 }); // Store token in cookie for 30 days
+
         return res.data;
     },
 
