@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value; // ← Use 'jwt' (your cookie name)
-  const localToken = localStorage.getItem("token"); // ← Check localStorage for token (if needed)
 
   console.log('token from middleware:', token);
   
@@ -16,12 +15,12 @@ export function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
   // If trying to access protected route without token → redirect to login
-  if (isProtected && !token && !localToken) {
+  if (isProtected && !token) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   // If logged in and trying to access login page → redirect to main
-  if (token || localToken && pathname === "/") {
+  if (token && pathname === "/") {
     return NextResponse.redirect(new URL("/main", request.url));
   }
 
