@@ -26,14 +26,6 @@ function HeroSection() {
     await login(payload)
   }
 
-  useEffect(() => {
-    const token = Cookies.get('token');
-    const localToken = localStorage.getItem('token');
-    console.log('Token in HeroSection:', token);
-    console.log('local token:', localToken);
-    
-  }, []);
-
   return (
     <>
     <div className="min-h-screen mb-[3rem] max-w-7xl mx-auto px-4 md:px-10 bg-white">

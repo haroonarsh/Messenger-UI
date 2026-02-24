@@ -26,17 +26,12 @@ export const authService = {
             withCredentials: true
         });
 
-        localStorage.setItem('token', res.data.token); // Store token in localStorage
         Cookies.set('token', res.data.token, { expires: 30 }); // Store token in cookie for 30 days
         return res.data;
     },
 
     async login(payload: LoginRequest) {
-        const res = await api.post(`${API_LOGIN}`, payload);
-
-        console.log('login token:', res.data.token);
-        
-        localStorage.setItem('token', res.data.token); // Store token in localStorage
+        const res = await api.post(`${API_LOGIN}`, payload);       
         Cookies.set('token', res.data.token, { expires: 30 }); // Store token in cookie for 30 days
 
         return res.data;
@@ -44,13 +39,12 @@ export const authService = {
 
     async getMe() {
         const token = Cookies.get('token');
-        const localToken = localStorage.getItem('token');
-        if (!token && !localToken) throw new Error('No token found');
+        if (!token) throw new Error('No token found');
         console.log('token:', token);
         
         const res = await api.get(`${API_ME}`, {
             headers: {
-                Authorization: `Bearer ${token || localToken}`
+                Authorization: `Bearer ${token}`
             },
             withCredentials: true
         });
@@ -61,7 +55,6 @@ export const authService = {
     async logout() {
         const res = await axios.post(`${API_LOGOUT}`, {});
         Cookies.remove('token');
-        localStorage.removeItem('token');
         return res.data;
     }
 };
