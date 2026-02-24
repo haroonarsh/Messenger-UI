@@ -27,8 +27,11 @@ function HeroSection() {
   }
 
   useEffect(() => {
-    const token = Cookies.get("token");
+    const token = Cookies.get('token');
+    const localToken = localStorage.getItem('token');
     console.log('Token in HeroSection:', token);
+    console.log('local token:', localToken);
+    
   }, []);
 
   return (
