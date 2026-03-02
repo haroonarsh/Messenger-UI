@@ -12,8 +12,6 @@ import { findOrCreateConversation } from '@/services/chat/chat.service';
 import { getFriends } from '@/services/user/user.service';
 import { Friend } from '@/libs/types';
 import { useOnlineUsers } from '@/context/OnlineUsersContext';
-import { useUnread } from '@/context/UnreadContext';
-import { Badge } from '@/components/ui/badge';
 
 interface FriendsBarProps {
   friend?: Friend | null;
@@ -24,13 +22,11 @@ function FriendsBar({ friend }: FriendsBarProps) {
     const [friends, setFriends] = useState<Friend[]>([]);
     const [onlineUser, setOnlineUser] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
-    const pathname = usePathname();
 
     const { user } = useAuth();
     const { socket } = useSocket();
     const router = useRouter();
     const { onlineUsers } = useOnlineUsers();
-    const { unreadCounts } = useUnread();
        
     // Fetch friends
     const fetchFriends = async () => {
@@ -121,12 +117,6 @@ function FriendsBar({ friend }: FriendsBarProps) {
               <BsThreeDots className='text-md text-gray-500' />
             </span>
           </div>
-          {/* Unread Badge */}
-    {unreadCounts[friend._id] > 0 && (
-      <Badge className="absolute top-6 right-2 bg-red-500 text-white">
-        {unreadCounts[friend._id]}
-      </Badge>
-    )}
         </div>
           ))
         )}
