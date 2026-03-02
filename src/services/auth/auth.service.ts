@@ -40,7 +40,6 @@ export const authService = {
     async getMe() {
         const token = Cookies.get('token');
         if (!token) throw new Error('No token found');
-        console.log('token:', token);
         
         const res = await api.get(`${API_ME}`, {
             headers: {

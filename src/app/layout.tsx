@@ -3,9 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/auth/useAuth";
 import { OnlineUsersProvider } from "@/context/OnlineUsersContext";
-import { UnreadProvider } from "@/context/UnreadContext";
 import { Toaster } from "react-hot-toast";
-import GlobalNotificationListener from "@/components/globalNotificationListener/GlobalNotificationListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,11 +32,8 @@ export default function RootLayout({
       >
         <AuthProvider>
           <OnlineUsersProvider>
-            <UnreadProvider>
               <Toaster position="top-right" />
-              <GlobalNotificationListener />
               {children}
-            </UnreadProvider>
           </OnlineUsersProvider>
         </AuthProvider>
       </body>

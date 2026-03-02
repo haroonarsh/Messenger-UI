@@ -25,8 +25,6 @@ function Page() {
   useEffect(() => {
     if (!loading && !user || user === null) {
       router.push('/');
-    } else {
-      console.log("User:", user);
     }
   }, [loading, user, router]);
 
@@ -37,15 +35,10 @@ function Page() {
       try {
         const response = await api.get(`${API_BASE_URL}/api/chat/conversations/${params.id}`);
         const conversation = response.data;
-
-        console.log('Fetched conversation:', conversation);
-        console.log('userID:', user.id);
         
         const otherParticipant = conversation.participants.find(
           (p: User) => p._id !== user?.id
         );
-
-        console.log('otherParticipant:', otherParticipant);
         
 
         setFriend(otherParticipant || null);

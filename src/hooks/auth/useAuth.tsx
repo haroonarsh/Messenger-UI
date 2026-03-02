@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const fetchedUser = await authService.getMe();
             setUser(fetchedUser);
-            console.log('Fetching user:', fetchedUser);
             
             if (fetchedUser !== null && fetchedUser !== undefined) {
                 router.push("/main");
@@ -61,7 +60,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             toast.success("Logged in successfully", { duration: 3000, position: "top-right", icon: "🚀"});
             router.push("/main")
         } catch (error: unknown) {
-            console.log("Error logging in:", error);
             if (error instanceof Error) {
                 toast.error(error.message || "Failed to log in", { duration: 3000, position: "top-right"});
             }
