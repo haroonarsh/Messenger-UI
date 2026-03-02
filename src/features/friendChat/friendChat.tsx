@@ -22,8 +22,9 @@ import { User } from '@/libs/types';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { IoVideocam } from "react-icons/io5";
 import { IoCall } from "react-icons/io5";
-import { PhoneOff, Mic, MicOff, PlayCircle, PauseCircle } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, PlayCircle, PauseCircle,  } from 'lucide-react';
 import { useUnread } from '@/context/UnreadContext';
+import { IoArrowBack } from "react-icons/io5";
 
 interface Message {
   _id: string;
@@ -51,6 +52,7 @@ function FriendChat({ conversationId, friend, onToggleInfo }: FriendChatProps) {
   const { socket, joinConversation, leaveConversaton, sendMessage } = useSocket();
   const { user } = useAuth();
   const { resetUnread } = useUnread();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -335,7 +337,7 @@ const formatTime = (seconds: number) => {
       setPendingOffer(offer); // store the offer temporarily
       setCallType(callType);
       setIncomingCall({ fromUserId, type: callType });
-      toast(`Incoming ${callType} call from ${friend.name}`);
+      toast(`Incoming ${callType} call from ${friend?.name}`);
     });
 
     socket.on("call-answered", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
@@ -539,8 +541,16 @@ const formatTime = (seconds: number) => {
     if (e.key === "Enter") handleSend();
   };
 
+  const onBlack = () => {
+    router.push('/main');
+    // make the friend null
+    friend = null;
+    console.log('frind:', friend);
+    
+  }
+
   if (loading) return (
-  <div className='flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans'>
+  <div className='hidden md:flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans'>
     <div className='flex flex-col gap-3 p-4 m-auto text-center items-center'>
     <Image src="/messenger.png" alt="Logo" width={40} height={40} className=''/>
     <h1 className='text-xl md:text-2xl lg:text-3xl font-light text-gray-800 '>
@@ -559,12 +569,18 @@ const formatTime = (seconds: number) => {
 
   return (
     <>
-    <div className='flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans'>
+    <div className='flex flex-col gap-3 relative bg-[#ffffff] w-full mx-4 shadow-lg h-[97%] mt-2  md:my-4 rounded-xl text-[#595959] font-sans'>
       {/* header */}
-      <div className='absolute top-0 left-0 w-full px-2 py-1 rounded-t-xl flex items-center justify-between border-b border-gray-300 bg-white shadow-xs'>
+      <div className='absolute z-50 top-0 left-0 w-full px-2 py-1 rounded-t-xl flex items-center justify-between border-b border-gray-300 bg-white shadow-xs'>
           <div className='flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-[5px] py-[2px] rounded-md'>
+            <span
+            onClick={onBlack}
+            className="block md:hidden p-2 -ml-2 hover:bg-gray-100 rounded-full"
+            >
+              <IoArrowBack className='text-[22px] text-[#aa00ff]' />
+            </span>
           <img src={friend?.avatar?.url || '/side2.png'} alt="Profile Image" width={100} height={100} className="w-[36px] h-[36px] cursor-pointer rounded-full border border-gray-300" />
-          <span className={`absolute bottom-[10px] left-[40px] w-3 h-3 rounded-full border-2 border-white ${
+          <span className={`absolute bottom-[10px] left-[78px] md:left-[40px] w-3 h-3 rounded-full border-2 border-white ${
               onlineUsers.has(friend?._id || '') ? 'bg-green-500' : 'bg-gray-400'
             }`} />
           <span className='flex flex-col'>
@@ -781,19 +797,6 @@ const formatTime = (seconds: number) => {
           )}
         {/* {isTyping && <p className="text-gray-500 text-sm">{isTyping}</p>} */}
         <div ref={messagesEndRef} />
-        {/* <div className='group flex items-start gap-2 self-end my-3'>
-          <span className='hidden group-hover:flex items-center mt-1 justify-center'>
-            <BiDotsVerticalRounded className='text-[27px] text-gray-500 p-[4px] rounded-full hover:bg-gray-200 cursor-pointer' />
-            <BiSolidMessageRoundedDetail className='text-[27px] text-gray-500 p-[4px] rounded-full hover:bg-gray-200 cursor-pointer' />
-            <BiSolidShare className='text-[27px] text-gray-500 p-[4px] rounded-full hover:bg-gray-200 cursor-pointer' />
-
-            <MdEmojiEmotions className='text-[27px] text-gray-500 p-[4px] rounded-full hover:bg-gray-200 cursor-pointer' />
-          </span>
-          <div className='self-end'>
-            <p className='bg-[#3050f9] px-3 py-1 rounded-full text-gray-50'>I am fine. What about you?</p>
-            <p className='text-gray-500 text-end text-[12px] mr-2'>Sent 23min ago</p>
-          </div>
-        </div> */}
       </div>
       {/* input */}
       <div className='absolute bottom-0 left-0 w-full px-2 py-3 flex items-center rounded-b-xl justify-between bg-white shadow-xs'>

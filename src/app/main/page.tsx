@@ -5,13 +5,14 @@ import FriendsBar from '@/features/friendsBar/friendsBar'
 import Sidebar from '@/features/sidebar/sidebar'
 import { useAuth } from '@/hooks/auth/useAuth';
 import { IUser } from '@/libs/types';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast';
 
 function Page() {
   const { loading, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user || user === null) {
@@ -24,7 +25,8 @@ function Page() {
   return (
     <main className='bg-[#f5f5f5] h-screen overflow-hidden w-full flex items-start justify-start'>
       <Sidebar data={user as IUser} />
-      <FriendsBar />
+      
+      <FriendsBar {...pathname === '/main' ? { friend: null } : {}}/>
       <FriendChat conversationId="" friend={null} />
       {/* <FriendInfo /> */}
       <Toaster />
