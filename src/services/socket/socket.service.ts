@@ -17,7 +17,6 @@ export const initSocket = () => {
     });
 
     socket.on("connect", () => {
-        console.log("Socket connected");
         // Join user room automatically
         socket?.emit("join", { userId: token });
     })

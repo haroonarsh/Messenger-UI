@@ -17,8 +17,6 @@ function Page() {
   useEffect(() => {
     if (!loading && !user || user === null) {
       router.push('/');
-    } else {
-      console.log("User:", user);
     }
   }, [loading, user, router]);
 

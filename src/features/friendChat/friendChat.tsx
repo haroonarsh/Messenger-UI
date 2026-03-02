@@ -23,7 +23,6 @@ import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { IoVideocam } from "react-icons/io5";
 import { IoCall } from "react-icons/io5";
 import { PhoneOff, Mic, MicOff, PlayCircle, PauseCircle,  } from 'lucide-react';
-import { useUnread } from '@/context/UnreadContext';
 import { IoArrowBack } from "react-icons/io5";
 
 interface Message {
@@ -51,7 +50,6 @@ interface FriendChatProps {
 function FriendChat({ conversationId, friend, onToggleInfo }: FriendChatProps) {
   const { socket, joinConversation, leaveConversaton, sendMessage } = useSocket();
   const { user } = useAuth();
-  const { resetUnread } = useUnread();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -363,10 +361,6 @@ const formatTime = (seconds: number) => {
       socket.off("call-ended");
     };
   }, [socket, friend]);
-
-  ////////////////////////////////////////
-
-  console.log('messages:', messages);
   
   // auto-scroll to bottom
   const scrollToBottom = () => {
@@ -401,13 +395,9 @@ const formatTime = (seconds: number) => {
     setPreviewUrl(url);
     setPreviewType(file.type.startsWith('video') ? 'video' : 'image');
 
-    console.log('Selected file:', file);
     // Upload immediately
     uploadAndSend(file);
   };
-  console.log('previewUrl:', previewUrl);
-  console.log('previewType:', previewType);
-  
 
   const uploadAndSend = async (file: File) => {
     const formData = new FormData();
@@ -421,8 +411,6 @@ const formatTime = (seconds: number) => {
       });
 
       const mediaUrl = res.data.mediaUrl;
-
-      console.log('Uploaded media URL:', mediaUrl);
 
       // Send message with media URL
       sendMessage({ conversationId, text: "", type: file.type.startsWith('video') ? 'video' : 'image', mediaUrl });
@@ -515,13 +503,6 @@ const formatTime = (seconds: number) => {
     };
   }, [socket, user?.id]);
 
-  // Mark messages as read when opening chat
-    useEffect(() => {
-    if (friend?._id) {
-      resetUnread(friend._id);
-    }
-  }, [friend?._id]);
-
   const handleSend = () => {
     if (!input.trim() || !conversationId) return;
 
@@ -545,7 +526,6 @@ const formatTime = (seconds: number) => {
     router.push('/main');
     // make the friend null
     friend = null;
-    console.log('frind:', friend);
     
   }
 

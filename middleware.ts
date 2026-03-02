@@ -3,12 +3,8 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value; // ← Use 'jwt' (your cookie name)
-
-  console.log('token from middleware:', token);
   
   const pathname = request.nextUrl.pathname;
-
-  console.log("Middleware - Path:", pathname, "Token exists:", !!token);
 
   // Protected routes (require login)
   const protectedPaths = ["/main", "/chat"];

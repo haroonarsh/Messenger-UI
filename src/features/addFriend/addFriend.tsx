@@ -79,23 +79,6 @@ export function InviteModal({ open, onOpenChange }: InviteModalProps) {
     }
   };
 
-  // // Filter users based on search query
-  // const filteredUsers = useMemo(() => {
-  //   if (!searchQuery.trim()) return MOCK_USERS
-
-  //   return MOCK_USERS.filter((user) => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  // }, [searchQuery])
-
-  // const handleSelectUser = (userId: string) => {
-    
-  // }
-  // const handleInvite = () => {
-  //   console.log("Inviting users:", selectedUsers)
-  //   setSelectedUsers([])
-  //   setSearchQuery("")
-  //   onOpenChange(false)
-  // }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">

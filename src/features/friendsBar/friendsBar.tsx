@@ -68,9 +68,7 @@ function FriendsBar({ friend }: FriendsBarProps) {
     }, [socket]);
 
     const openChat = async (friendId: string) => {
-      try {
-        console.log('Creating conv with:', [user?.id, friendId]);
-        
+      try {      
         const conv = await findOrCreateConversation([user?.id || '', friendId]);
         router.push(`/chat/${conv._id}`);
       } catch (error: unknown) {
