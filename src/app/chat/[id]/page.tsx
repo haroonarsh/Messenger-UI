@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { API_BASE_URL } from '@/libs/api';
 import { IUser, User } from '@/libs/types';
 import api from '@/utils/api';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -17,6 +17,7 @@ const loadingToast = () => toast.loading("Loading...", { duration: 3000, positio
 function Page() {
   const { loading, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams();
   const [friend, setFriend] = useState<User | null>(null);
   const [showFriendInfo, setShowFriendInfo] = useState(false);
@@ -58,16 +59,18 @@ function Page() {
 
   const toggleFriendInfo = () => {
     setShowFriendInfo(prev => !prev);
-  }
+  };
 
   if (loading) return loadingToast();
 
   return (
     <main className='bg-[#f5f5f5] h-screen overflow-hidden w-full flex items-start justify-start'>
+      <div className={`${pathname === '/main' ? 'block' : 'hidden'} md:block`}>
       <Sidebar data={user as IUser} />
+      </div>
       <FriendsBar />
       <FriendChat conversationId={params.id as string} friend={friend} onToggleInfo={toggleFriendInfo} />
-      {showFriendInfo && friend && <FriendInfo friend={friend} />}
+      {showFriendInfo && friend && <FriendInfo friend={friend} showInfo={showFriendInfo} onClose={() => setShowFriendInfo(false)} />}
       <Toaster />
     </main>
   )
