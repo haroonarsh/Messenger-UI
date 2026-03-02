@@ -16,12 +16,15 @@ import { MdNotificationsOff } from "react-icons/md";
 import { MdReportProblem } from "react-icons/md";
 import { TbLogout } from "react-icons/tb";
 import { User } from '@/libs/types';
+import { IoClose } from 'react-icons/io5';
 
 interface FriendInfoProps {
   friend: User | null;
+  showInfo?: boolean;
+  onClose?: () => void;
 }
 
-function FriendInfo( { friend }: FriendInfoProps ) {
+function FriendInfo( { friend, showInfo = false, onClose }: FriendInfoProps ) {
   const [info, setInfo] = useState(false);
   const [members, setMembers] = useState(false);
   const [media, setMedia] = useState(false);
@@ -42,8 +45,21 @@ function FriendInfo( { friend }: FriendInfoProps ) {
   }
   return (
     <>
-    <div className='hidden lg:flex flex-col gap-3 bg-[#ffffff] min-w-[23vw] mr-4 shadow-lg h-[97%] my-4 rounded-xl text-[#595959] font-sans px-2 py-4 scrollbar-component'>
-      <div className='w-full flex flex-col items-center justify-center gap-2'>
+    <div className={`
+  fixed lg:static inset-y-0 right-0 z-[60]
+  flex flex-col gap-3 bg-[#ffffff] 
+  w-[80vw] sm:w-[60vw] lg:min-w-[23vw] lg:w-auto
+  mr-0 lg:mr-4 shadow-lg 
+  h-full lg:h-[97%] lg:my-4 rounded-xl 
+  text-[#595959] font-sans px-2 py-4 scrollbar-component
+  transform transition-transform duration-300 ease-in-out
+  ${showInfo ? 'translate-x-0' : 'translate-x-full'}
+  lg:translate-x-0 lg:flex
+`}>
+      <div className='relative w-full flex flex-col items-center justify-center gap-2'>
+        <span onClick={onClose} className='fixed left-[18px] top-[20px] lg:hidden'>
+          <IoClose className='text-[22px] text-[#aa00ff] cursor-pointer lg:hidden' />
+        </span>
         <img src={ friend?.avatar?.url || "/side2.png"} alt="Profile Image" width={100} height={100} className="w-[76px] h-[76px] cursor-pointer rounded-full border border-gray-300" />
         <h2 className='text-gray-950 text-[17px] font-medium'>{friend?.name || 'Loading...'}</h2>
         <p className='text-gray-500 text-[13px]'>{friend?.status || 'Loading...' }</p>
@@ -178,6 +194,9 @@ function FriendInfo( { friend }: FriendInfoProps ) {
         </div>
       </div>
     </div>
+    {showInfo && (
+      <div className='fixed inset-0 bg-black/40 z-40 lg:hidden' />
+    )}
     </>
   )
 }

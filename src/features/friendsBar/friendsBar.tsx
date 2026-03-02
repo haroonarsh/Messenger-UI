@@ -6,7 +6,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { InviteModal } from '../addFriend/addFriend';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSocket } from '@/hooks/socket/useSocket';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { findOrCreateConversation } from '@/services/chat/chat.service';
 import { getFriends } from '@/services/user/user.service';
@@ -15,12 +15,16 @@ import { useOnlineUsers } from '@/context/OnlineUsersContext';
 import { useUnread } from '@/context/UnreadContext';
 import { Badge } from '@/components/ui/badge';
 
+interface FriendsBarProps {
+  friend?: Friend | null;
+}
 
-function FriendsBar() {
+function FriendsBar({ friend }: FriendsBarProps) {
     const [inviteOpen, setInviteOpen] = useState(false);
     const [friends, setFriends] = useState<Friend[]>([]);
     const [onlineUser, setOnlineUser] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const pathname = usePathname();
 
     const { user } = useAuth();
     const { socket } = useSocket();
@@ -79,12 +83,12 @@ function FriendsBar() {
     };
 
   if (loading) {
-  return  <div className="flex flex-col gap-3 bg-[#ffffff] min-w-[338px] xl:min-w-[352px] h-full shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2" > <p className="py-8 text-center">Loading friends... </p> </div>;
+  return  <div className="flex flex-col gap-3 bg-[#ffffff] w-full mr-2 md:mr-0 md:min-w-[338px] xl:min-w-[352px] h-full shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2" > <p className="py-8 text-center">Loading friends... </p> </div>;
   }
 
   return (
     <>
-    <div className='flex flex-col gap-3 bg-[#ffffff] min-w-[338px] xl:min-w-[352px] h-[97%] shadow-lg my-4 rounded-xl text-[#595959] font-sans px-4 py-2'>
+      <div className={`${friend !== null ? 'hidden md:flex' : 'flex'} flex-col gap-3 bg-[#ffffff] min-w-[96%] md:mr-0 md:min-w-[338px] xl:min-w-[352px] h-[97%] shadow-lg my-4 rounded-xl text-[#f85858] font-sans px-4 py-2`}>
       <div className='flex items-center justify-between text-gray-950'>
         <h1 className='text-2xl font-bold'>Chats</h1>
         <span className='flex items-center gap-2'>
@@ -129,6 +133,7 @@ function FriendsBar() {
         
       </div>
     </div>
+    
     <InviteModal open={inviteOpen} onOpenChange={setInviteOpen} />
     </>
   )
