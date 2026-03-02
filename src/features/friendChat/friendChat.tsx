@@ -433,12 +433,9 @@ const formatTime = (seconds: number) => {
       try {
         const res = await api.get(`${API_BASE_URL}/api/chat/messages/${conversationId}?skip=${skip.current}&limit=${limit}`);
 
-         // ✅ Use slice() first to avoid mutating original, then reverse
-        const reversed = [...res.data].reverse();
-
         if (res.data.length < limit) setHasMore(false);
 
-        setMessages(prev => loadMore ? [...reversed, ...prev] : reversed);
+        setMessages(prev => loadMore ? [...res.data, ...prev] : res.data);
         skip.current += res.data.length;
 
         // ✅ Only scroll to bottom on initial load, not on loadMore
