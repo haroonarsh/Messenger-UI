@@ -21,10 +21,11 @@ function Sidebar({ data }: Props) {
   return (
     <>
     <div className='md:flex md:flex-col md:relative md:items-start md:justify-start md:gap-5 md:p-4 md:w-[80px] ml-2 md:ml-0 w-0 h-0 md:h-screen'>
-      <span className='absolute w-[12px] h-[12px] rounded-full border-2 md:top-[24px] bottom-[22px] z-20 left-[45px] md:right-[27px] md:border-white bg-blue-600' />
+      <span className='md:absolute hidden w-[12px] h-[12px] rounded-full border-2 md:top-[24px] bottom-[22px] z-10 left-[45px] md:right-[27px] md:border-white bg-blue-600' />
       <span className='hidden md:absolute md:w-[12px] md:h-[12px] md:rounded-full md:border-2 md:top-[112px] md:right-[27px] md:border-white md:bg-blue-600' />
       <div className='md:contents fixed bottom-0 left-0 w-full bg-gray-900 md:bg-transparent text-white flex z-10 items-center justify-between px-5'>
-        <span>
+        <span className='relative'>
+          <span className='absolute right-[6px] top-[10px] w-[12px] h-[12px] rounded-full border-2 border-white bg-blue-600' />
         <TbMessageCircleFilled className='text-gray-600 w-[45px] h-[45px] cursor-pointer duration-200 hover:bg-gray-300 p-[10px] rounded-lg' />
         </span>
         <span>
