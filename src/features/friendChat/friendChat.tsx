@@ -433,11 +433,18 @@ const formatTime = (seconds: number) => {
       try {
         const res = await api.get(`${API_BASE_URL}/api/chat/messages/${conversationId}?skip=${skip.current}&limit=${limit}`);
 
+         // ✅ Use slice() first to avoid mutating original, then reverse
+        const reversed = [...res.data].reverse();
+
         if (res.data.length < limit) setHasMore(false);
-        
-        setMessages(prev => loadMore ? [...res.data.reverse(), ...prev] : res.data.reverse()); // Reverse to show oldest first
+
+        setMessages(prev => loadMore ? [...reversed, ...prev] : reversed);
         skip.current += res.data.length;
-        scrollToBottom();
+
+        // ✅ Only scroll to bottom on initial load, not on loadMore
+        if (!loadMore) {
+          setTimeout(() => scrollToBottom(), 100);
+        }
       } catch (error) {
         toast.error("Failed to load messages");
       } finally {
